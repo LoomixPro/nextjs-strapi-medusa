@@ -1,0 +1,103 @@
+{
+  "kind": "collectionType",
+  "collectionName": "hp_section_category_collections",
+  "info": {
+    "singularName": "hp-section-category-collection",
+    "pluralName": "hp-section-category-collections",
+    "displayName": "Section (Category Collection)",
+    "description": "Showcase section for featured product categories and curated collections."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "adminDisplayTitle": {
+      "type": "string",
+      "description": "Internal name to identify this category/collection section in Strapi admin lists."
+    },
+    "title": {
+      "type": "string",
+      "description": "Main title heading of the category/collection section.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "description": "Short description text explaining the category selection.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "badge": {
+      "type": "string",
+      "description": "Top badge or label displayed above the section title (e.g. 'EXPLORE').",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "textLink": {
+      "type": "string",
+      "description": "Label text for the 'View All' link (e.g. 'View All Categories' or 'See Collections').",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "linkUrl": {
+      "type": "string",
+      "description": "Destination route for the 'View All' link (e.g. '/collections' or '/categories').",
+      "default": "/collections",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "style": {
+      "type": "string",
+      "description": "Grid layout style identifier (e.g. style-1, style-2).",
+      "default": "style-1",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "headerStyle": {
+      "type": "string",
+      "description": "Header title and badge typography style (e.g. style-1).",
+      "default": "style-1",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "items": {
+      "type": "dynamiczone",
+      "description": "Dynamic list of Category or Collection cards to display in this grid.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "components": [
+        "category-collection.category-item",
+        "category-collection.collection-item"
+      ]
+    }
+  }
+}

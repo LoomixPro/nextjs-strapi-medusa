@@ -1,0 +1,34 @@
+{
+  "collectionName": "components_settings_background_settings",
+  "info": {
+    "displayName": "Background Settings",
+    "icon": "image",
+    "description": "Global background style configuration"
+  },
+  "options": {},
+  "attributes": {
+    "style": {
+      "type": "enumeration",
+      "enum": [
+        "silk",
+        "grid",
+        "solid",
+        "none"
+      ],
+      "default": "grid",
+      "required": true
+    },
+    "opacityLight": {
+      "type": "integer",
+      "default": 40,
+      "min": 0,
+      "max": 100
+    },
+    "opacityDark": {
+      "type": "integer",
+      "default": 30,
+      "min": 0,
+      "max": 100
+    }
+  }
+}

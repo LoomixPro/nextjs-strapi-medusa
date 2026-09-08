@@ -1,0 +1,36 @@
+{
+  "kind": "singleType",
+  "collectionName": "homepages",
+  "info": {
+    "singularName": "homepage",
+    "pluralName": "homepages",
+    "displayName": "Homepage",
+    "description": "The main page of the storefront"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "blocks": {
+      "type": "dynamiczone",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "components": [
+        "ui.product-scroll-block",
+        "ui.hero-block",
+        "ui.product-showcase-block",
+        "ui.features-block",
+        "ui.blog-posts-block",
+        "ui.category-collection-block"
+      ]
+    }
+  }
+}

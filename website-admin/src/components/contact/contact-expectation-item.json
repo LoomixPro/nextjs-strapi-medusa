@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_contact_contact_expectation_items",
+  "info": {
+    "displayName": "Contact Expectation Item",
+    "icon": "check"
+  },
+  "options": {},
+  "attributes": {
+    "text": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

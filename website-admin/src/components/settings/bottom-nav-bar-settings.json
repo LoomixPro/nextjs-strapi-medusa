@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_settings_bottom_nav_bar_settings",
+  "info": {
+    "displayName": "Bottom Nav Bar Settings",
+    "icon": "layout",
+    "description": "Configuration for the mobile bottom navigation bar"
+  },
+  "options": {},
+  "attributes": {
+    "style": {
+      "type": "string",
+      "default": "style-1"
+    }
+  }
+}

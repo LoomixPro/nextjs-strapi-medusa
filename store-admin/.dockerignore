@@ -1,0 +1,10 @@
+node_modules
+.cache
+.medusa
+dist
+build
+.env
+.env.template
+*.log
+.git
+.vscode

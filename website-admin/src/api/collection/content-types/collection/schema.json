@@ -1,0 +1,52 @@
+{
+  "kind": "collectionType",
+  "collectionName": "collections",
+  "info": {
+    "singularName": "collection",
+    "pluralName": "collections",
+    "displayName": "Collection",
+    "description": "Product collections synchronized from Medusa."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "description": "Collection display title (e.g. 'Summer 2026', 'Best Sellers').",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true
+    },
+    "medusaId": {
+      "type": "string",
+      "description": "Unique Medusa system ID (e.g. pcol_...). Auto-synced; do NOT modify manually.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "required": true,
+      "unique": true
+    },
+    "medusaHandle": {
+      "type": "string",
+      "description": "Unique URL slug handle from Medusa (e.g. 'summer-collection'). Auto-synced; do NOT modify manually.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "unique": true,
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "collectionName": "components_terms_terms_text_sections",
+  "info": {
+    "displayName": "Terms Text Section",
+    "icon": "write"
+  },
+  "options": {},
+  "attributes": {
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "FileText",
+        "ShoppingBag",
+        "CreditCard",
+        "Package",
+        "RefreshCw",
+        "Shield",
+        "Scale",
+        "AlertCircle",
+        "CheckCircle",
+        "Mail"
+      ],
+      "default": "FileText",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "section_id": {
+      "type": "string",
+      "required": true
+    },
+    "content": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

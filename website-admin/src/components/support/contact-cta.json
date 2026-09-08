@@ -1,0 +1,48 @@
+{
+  "collectionName": "components_support_contact_ctas",
+  "info": {
+    "displayName": "Return Contact CTA",
+    "icon": "mail"
+  },
+  "options": {},
+  "attributes": {
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "Clock",
+        "Truck",
+        "DollarSign",
+        "RefreshCw",
+        "FileText",
+        "CheckCircle2",
+        "Package",
+        "XCircle",
+        "AlertCircle",
+        "Mail"
+      ],
+      "default": "Mail"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "button_text": {
+      "type": "string",
+      "required": true
+    },
+    "button_link": {
+      "type": "string",
+      "required": true
+    },
+    "secondary_button_text": {
+      "type": "string"
+    },
+    "secondary_button_link": {
+      "type": "string"
+    }
+  }
+}

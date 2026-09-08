@@ -1,0 +1,84 @@
+{
+  "kind": "singleType",
+  "collectionName": "storefront_settings",
+  "info": {
+    "singularName": "storefront-setting",
+    "pluralName": "storefront-settings",
+    "displayName": "Storefront Settings",
+    "description": "Global layout, styling, and configuration settings for the Next.js storefront."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "modules": {
+      "type": "dynamiczone",
+      "description": "Active UI module style selectors (Header, Footer, Product Page, Store, Cart, Checkout, Theme, Buttons, Navbar).",
+      "components": [
+        "settings.product-card-selection",
+        "settings.header-settings",
+        "settings.product-page-settings",
+        "settings.checkout-page-settings",
+        "settings.store-page-settings",
+        "settings.order-page-settings",
+        "settings.cart-page-settings",
+        "settings.login-page-settings",
+        "settings.footer-settings",
+        "settings.profile-page-settings",
+        "settings.bottom-nav-bar-settings",
+        "settings.background-settings",
+        "settings.button-settings",
+        "settings.theme-settings"
+      ]
+    },
+    "isRtl": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable Right-to-Left (RTL) layout direction as default for the storefront."
+    },
+    "timeZone": {
+      "type": "string",
+      "default": "UTC",
+      "description": "Standard IANA timezone identifier (e.g. Asia/Dubai, Europe/London, America/New_York, UTC)."
+    },
+    "convertToToman": {
+      "type": "boolean",
+      "default": false,
+      "description": "Convert Rial currency prices to Toman (divides Rial by 10) for Iran locale."
+    },
+    "returnDeadlineDays": {
+      "type": "integer",
+      "default": 7,
+      "description": "Allowed number of days for customers to submit order return requests."
+    },
+    "allowIndexing": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow search engine crawlers (Google, Bing, etc.) to index the storefront."
+    },
+    "translations": {
+      "type": "component",
+      "description": "Uploaded custom JSON translation files for each locale to override UI messages.",
+      "component": "settings.translation-file",
+      "repeatable": true
+    },
+    "siteName": {
+      "type": "string",
+      "description": "Default website name shown in browser tab and search engine results."
+    },
+    "siteDescription": {
+      "type": "text",
+      "description": "Default meta description for SEO and social sharing."
+    },
+    "favicon": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "description": "Custom site favicon/icon. High resolution square PNG or SVG recommended."
+    }
+  }
+}

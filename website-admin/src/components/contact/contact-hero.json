@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_contact_contact_heroes",
+  "info": {
+    "displayName": "Contact Hero",
+    "icon": "home"
+  },
+  "options": {},
+  "attributes": {
+    "badge": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

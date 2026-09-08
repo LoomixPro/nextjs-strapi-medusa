@@ -1,0 +1,45 @@
+{
+  "kind": "singleType",
+  "collectionName": "size_guide_pages",
+  "info": {
+    "singularName": "size-guide-page",
+    "pluralName": "size-guide-pages",
+    "displayName": "Size Guide Page",
+    "description": "Size Guide page with dynamic blocks"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true
+    },
+    "blocks": {
+      "type": "dynamiczone",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "components": [
+        "guide.guide-hero",
+        "guide.guide-important-notice",
+        "guide.guide-measurement",
+        "guide.guide-charts",
+        "guide.guide-faq",
+        "guide.guide-contact-cta"
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_settings_header_settings",
+  "info": {
+    "displayName": "Header Settings",
+    "icon": "layout",
+    "description": "Header configuration including style and logos"
+  },
+  "options": {},
+  "attributes": {
+    "headerStyle": {
+      "type": "string",
+      "default": "style-1"
+    },
+    "logoLight": {
+      "type": "component",
+      "component": "settings.logo-config",
+      "repeatable": false,
+      "required": false
+    },
+    "logoDark": {
+      "type": "component",
+      "component": "settings.logo-config",
+      "repeatable": false,
+      "required": false
+    }
+  }
+}

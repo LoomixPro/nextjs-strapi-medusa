@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_contact_contact_form_settings",
+  "info": {
+    "displayName": "Contact Form Settings",
+    "icon": "cog"
+  },
+  "options": {},
+  "attributes": {
+    "privacy_text": {
+      "type": "string"
+    },
+    "submit_button_text": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

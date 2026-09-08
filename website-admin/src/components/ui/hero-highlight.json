@@ -1,0 +1,47 @@
+{
+  "collectionName": "components_ui_hero_highlights",
+  "info": {
+    "displayName": "Hero Highlight",
+    "icon": "bulletList",
+    "description": "Trust badge or highlight point displayed under hero CTA button"
+  },
+  "options": {},
+  "attributes": {
+    "text": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "color": {
+      "type": "enumeration",
+      "enum": [
+        "emerald",
+        "primary",
+        "amber",
+        "blue",
+        "purple",
+        "rose"
+      ],
+      "default": "emerald"
+    },
+    "icon_name": {
+      "type": "enumeration",
+      "enum": [
+        "shield-check",
+        "truck",
+        "rotate-ccw",
+        "headset",
+        "credit-card",
+        "award",
+        "percent",
+        "zap",
+        "dot"
+      ],
+      "default": "dot"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_settings_order_page_settings",
+  "info": {
+    "displayName": "Order Page Settings",
+    "icon": "shopping-cart",
+    "description": "Settings for the order completed and order details pages"
+  },
+  "options": {},
+  "attributes": {
+    "template": {
+      "type": "string",
+      "default": "style-1"
+    }
+  }
+}

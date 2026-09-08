@@ -1,0 +1,23 @@
+{
+  "account/templates/login": ["style-1", "style-2", "style-3"],
+  "account/templates/profile": ["style-1", "style-2"],
+  "cart/templates": ["style-1", "style-2"],
+  "checkout/templates": ["style-1", "style-2"],
+  "common/components/block-header": ["style-1", "style-2", "style-3"],
+  "home/components/BlogPostsBlock": ["style-1", "style-2"],
+  "home/components/CategoryCollectionShowcase": [
+    "style-1",
+    "style-2",
+    "style-3"
+  ],
+  "home/components/FeaturesBlock": ["style-1", "style-2", "style-3", "style-4"],
+  "home/components/Hero": ["style-1", "style-2"],
+  "home/components/ProductScroll": ["style-1", "style-2", "style-3"],
+  "home/components/ProductShowcase": ["style-1", "style-2", "style-3"],
+  "layout/components/bottom-nav-bar": ["style-1", "style-2"],
+  "layout/components/footer": ["style-1", "style-2"],
+  "layout/components/header": ["style-1", "style-2", "style-3"],
+  "order/templates": ["style-1", "style-2"],
+  "products/templates": ["style-1", "style-2"],
+  "store/templates": ["style-1", "style-2"]
+}

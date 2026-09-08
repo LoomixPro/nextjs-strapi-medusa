@@ -1,0 +1,75 @@
+# =======================================================
+# Root .gitignore — next-strapi-medusa
+# =======================================================
+
+# Environment variables — شامل secretهای حساس
+.env
+.env.local
+.env.*.local
+*.env
+
+# Docker
+docker-compose.override.yml
+
+# Certificates & Keys
+*.crt
+*.pem
+*.key
+*.p12
+*.pfx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+loom-blocks-cli/
+loom-blocks-registry/
+loomix-cli/
+loomix-registry/
+Loomix-registry/
+.agents/
+# =======================================================
+# Node.js & Dependencies (Global)
+# =======================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+*-report.json
+*-report.txt
+*lint*.json
+*lint*.txt
+output*.txt
+
+# =======================================================
+# Next.js (Storefront)
+# =======================================================
+store/.next/
+store/out/
+store/build/
+store/.swc/
+
+# =======================================================
+# Medusa (Store Admin & Backend)
+# =======================================================
+store-admin/dist/
+store-admin/build/
+store-admin/.cache/
+store-admin/.medusa/
+store-admin/uploads/
+store-admin/public/uploads/
+
+# =======================================================
+# Strapi (Website Admin)
+# =======================================================
+website-admin/build/
+website-admin/.cache/
+website-admin/.tmp/
+website-admin/public/uploads/
+website-admin/database.sqlite

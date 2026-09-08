@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_blog_ads",
+  "info": {
+    "displayName": "Shop Ad",
+    "icon": "shopping-bag",
+    "description": "Store promotion banner for blog posts"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "content": {
+      "type": "text",
+      "required": true
+    },
+    "adCode": {
+      "type": "string"
+    },
+    "adLink": {
+      "type": "string"
+    },
+    "adButtonText": {
+      "type": "string"
+    }
+  }
+}

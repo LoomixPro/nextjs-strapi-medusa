@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_authors",
+  "info": {
+    "singularName": "blog-author",
+    "pluralName": "blog-authors",
+    "displayName": "Blog Author",
+    "description": "Authors of blog articles"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true
+    },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_ui_hero_blocks",
+  "info": {
+    "displayName": "Hero Block",
+    "icon": "picture",
+    "description": "Standalone hero banner block with images, title, and CTA."
+  },
+  "options": {},
+  "attributes": {
+    "adminTitle": {
+      "type": "string",
+      "description": "Auto-filled section name for display in the blocks list"
+    },
+    "section": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::hp-section-hero.hp-section-hero"
+    }
+  }
+}

@@ -1,0 +1,117 @@
+"use client"
+
+import Back from "@modules/common/icons/back"
+import FastDelivery from "@modules/common/icons/fast-delivery"
+import Refresh from "@modules/common/icons/refresh"
+
+import Accordion from "./accordion"
+import { HttpTypes } from "@medusajs/types"
+import { useTranslations } from "next-intl"
+
+interface ProductTabsProps {
+  product: HttpTypes.StoreProduct
+}
+
+const ProductTabs = ({ product }: ProductTabsProps) => {
+  const t = useTranslations("Product.tabs")
+  const tabs = [
+    {
+      label: t("info_label"),
+      component: <ProductInfoTab product={product} />,
+    },
+    {
+      label: t("shipping_label"),
+      component: <ShippingInfoTab />,
+    },
+  ]
+
+  return (
+    <div className="w-full">
+      <Accordion type="multiple">
+        {tabs.map((tab, i) => (
+          <Accordion.Item
+            key={i}
+            title={tab.label}
+            headingSize="medium"
+            value={tab.label}
+          >
+            {tab.component}
+          </Accordion.Item>
+        ))}
+      </Accordion>
+    </div>
+  )
+}
+
+const ProductInfoTab = ({ product }: ProductTabsProps) => {
+  const t = useTranslations("Product.tabs")
+  return (
+    <div className="text-small-regular py-8">
+      <div className="grid grid-cols-2 gap-x-8">
+        <div className="flex flex-col gap-y-4">
+          <div>
+            <span className="font-semibold">{t("material")}</span>
+            <p>{product.material ?? "-"}</p>
+          </div>
+          <div>
+            <span className="font-semibold">{t("country_origin")}</span>
+            <p>{product.origin_country ?? "-"}</p>
+          </div>
+          <div>
+            <span className="font-semibold">{t("type")}</span>
+            <p>{product.type ? product.type.value : "-"}</p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-y-4">
+          <div>
+            <span className="font-semibold">{t("weight")}</span>
+            <p>{product.weight ? `${String(product.weight)} g` : "-"}</p>
+          </div>
+          <div>
+            <span className="font-semibold">{t("dimensions")}</span>
+            <p>
+              {product.length && product.width && product.height
+                ? `${String(product.length)}L x ${String(
+                    product.width
+                  )}W x ${String(product.height)}H`
+                : "-"}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const ShippingInfoTab = () => {
+  const t = useTranslations("Product.tabs")
+  return (
+    <div className="text-small-regular py-8">
+      <div className="grid grid-cols-1 gap-y-8">
+        <div className="flex items-start gap-x-2">
+          <FastDelivery />
+          <div>
+            <span className="font-semibold">{t("delivery_title")}</span>
+            <p className="max-w-sm">{t("delivery_desc")}</p>
+          </div>
+        </div>
+        <div className="flex items-start gap-x-2">
+          <Refresh />
+          <div>
+            <span className="font-semibold">{t("exchanges_title")}</span>
+            <p className="max-w-sm">{t("exchanges_desc")}</p>
+          </div>
+        </div>
+        <div className="flex items-start gap-x-2">
+          <Back />
+          <div>
+            <span className="font-semibold">{t("returns_title")}</span>
+            <p className="max-w-sm">{t("returns_desc")}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default ProductTabs

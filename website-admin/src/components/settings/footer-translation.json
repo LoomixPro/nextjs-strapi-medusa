@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_settings_footer_translations",
+  "info": {
+    "displayName": "Footer Translation",
+    "icon": "globe",
+    "description": "Localized content for footer description and copyright"
+  },
+  "options": {},
+  "attributes": {
+    "language": {
+      "type": "string",
+      "required": true,
+      "description": "Locale code matching Medusa / Storefront (e.g., 'default', 'en-US', 'fa', 'ar-AE')"
+    },
+    "description": {
+      "type": "text",
+      "required": false,
+      "description": "Brand bio and description displayed in the footer for this language"
+    },
+    "copyright": {
+      "type": "string",
+      "required": false,
+      "description": "Copyright notice text for this language (e.g., 'All rights reserved')"
+    }
+  }
+}

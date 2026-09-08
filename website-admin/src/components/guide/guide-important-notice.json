@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_guide_guide_important_notices",
+  "info": {
+    "displayName": "Guide Important Notice",
+    "icon": "information"
+  },
+  "options": {},
+  "attributes": {
+    "content": {
+      "type": "blocks",
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_guide_guide_heroes",
+  "info": {
+    "displayName": "Guide Hero",
+    "icon": "landscape",
+    "description": "Hero section of the Size Guide"
+  },
+  "options": {},
+  "attributes": {
+    "badge": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

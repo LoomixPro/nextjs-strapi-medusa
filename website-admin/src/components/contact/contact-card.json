@@ -1,0 +1,30 @@
+{
+  "collectionName": "components_contact_contact_cards",
+  "info": {
+    "displayName": "Contact Card",
+    "icon": "comment"
+  },
+  "options": {},
+  "attributes": {
+    "content": {
+      "type": "string",
+      "required": true
+    },
+    "sub_content": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "icon_name": {
+      "type": "enumeration",
+      "enum": [
+        "Mail",
+        "Phone",
+        "MapPin",
+        "MessageSquare"
+      ]
+    }
+  }
+}

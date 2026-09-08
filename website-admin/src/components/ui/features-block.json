@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_ui_features_blocks",
+  "info": {
+    "displayName": "Features & Testimonials Block",
+    "icon": "bulletList",
+    "description": "A block to display features or customer testimonials on the page"
+  },
+  "options": {},
+  "attributes": {
+    "adminTitle": {
+      "type": "string",
+      "description": "Auto-filled section name for display in the blocks list"
+    },
+    "features_section": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::hp-section-feature.hp-section-feature"
+    }
+  }
+}

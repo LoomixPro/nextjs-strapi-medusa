@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_contact_contact_info_cards",
+  "info": {
+    "displayName": "Contact Info Cards",
+    "icon": "bulletList"
+  },
+  "options": {},
+  "attributes": {
+    "cards": {
+      "type": "component",
+      "component": "contact.contact-card",
+      "repeatable": true
+    }
+  }
+}

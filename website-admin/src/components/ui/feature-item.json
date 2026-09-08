@@ -1,0 +1,39 @@
+{
+  "collectionName": "components_ui_feature_items",
+  "info": {
+    "displayName": "Feature Item",
+    "icon": "star",
+    "description": "An individual feature or benefit with an icon, title, and description."
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "icon": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "icon_name": {
+      "type": "enumeration",
+      "enum": [
+        "truck",
+        "shield-check",
+        "rotate-ccw",
+        "headset",
+        "credit-card",
+        "award",
+        "percent",
+        "zap"
+      ]
+    }
+  }
+}

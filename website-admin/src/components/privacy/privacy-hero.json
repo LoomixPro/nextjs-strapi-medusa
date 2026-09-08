@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_privacy_privacy_heroes",
+  "info": {
+    "displayName": "Privacy Hero",
+    "icon": "landscape",
+    "description": "Hero section of the Privacy page"
+  },
+  "options": {},
+  "attributes": {
+    "badge": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

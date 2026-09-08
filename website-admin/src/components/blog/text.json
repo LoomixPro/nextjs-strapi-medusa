@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_blog_texts",
+  "info": {
+    "displayName": "Text",
+    "icon": "align-justify",
+    "description": "Text paragraph for blog posts"
+  },
+  "options": {},
+  "attributes": {
+    "content": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

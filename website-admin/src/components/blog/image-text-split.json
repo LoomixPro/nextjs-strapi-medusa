@@ -1,0 +1,35 @@
+{
+  "collectionName": "components_blog_image_text_splits",
+  "info": {
+    "displayName": "Image Text Split",
+    "icon": "landscape",
+    "description": "Side by side image and text component"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "content": {
+      "type": "text",
+      "required": true
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "align": {
+      "type": "enumeration",
+      "enum": [
+        "left",
+        "right"
+      ],
+      "default": "right"
+    }
+  }
+}

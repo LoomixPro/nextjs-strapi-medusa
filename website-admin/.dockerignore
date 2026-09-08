@@ -1,0 +1,11 @@
+.tmp/
+.cache/
+.git/
+build/
+dist/
+node_modules/
+data/
+*.log
+.env
+.env.*
+public/uploads/

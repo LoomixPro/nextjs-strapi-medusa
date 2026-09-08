@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_about_about_stories",
+  "info": {
+    "displayName": "About Story",
+    "icon": "book",
+    "description": "Story section of the About page"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "paragraphs": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_ui_product_scroll_blocks",
+  "info": {
+    "displayName": "Product Scroll Block",
+    "icon": "grid",
+    "description": "Standalone block for displaying a horizontally scrollable product list."
+  },
+  "options": {},
+  "attributes": {
+    "adminTitle": {
+      "type": "string",
+      "description": "Auto-filled section name for display in the blocks list"
+    },
+    "section": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::hp-section-scroll-product.hp-section-scroll-product"
+    }
+  }
+}

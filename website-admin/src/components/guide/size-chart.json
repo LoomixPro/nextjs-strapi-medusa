@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_guide_size_charts",
+  "info": {
+    "displayName": "Size Chart",
+    "icon": "th",
+    "description": "A single size chart with title, description, and table image"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "string"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "image_description": {
+      "type": "text"
+    }
+  }
+}

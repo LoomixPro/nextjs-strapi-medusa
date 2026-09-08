@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_settings_cart_page_settings",
+  "info": {
+    "displayName": "Cart Page Settings",
+    "icon": "shopping-cart",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "template": {
+      "type": "string",
+      "default": "style-1"
+    },
+    "topBannerText": {
+      "type": "string"
+    }
+  }
+}

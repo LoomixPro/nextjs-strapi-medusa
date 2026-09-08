@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_about_about_ctas",
+  "info": {
+    "displayName": "About CTA",
+    "icon": "cursor",
+    "description": "Call to action section of the About page"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "primary_button_text": {
+      "type": "string",
+      "required": true
+    },
+    "primary_button_link": {
+      "type": "string",
+      "required": true
+    },
+    "secondary_button_text": {
+      "type": "string"
+    },
+    "secondary_button_link": {
+      "type": "string"
+    }
+  }
+}

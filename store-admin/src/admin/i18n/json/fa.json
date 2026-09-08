@@ -1,0 +1,79 @@
+{
+  "customRoutes": {
+    "returns": "مرجوعی‌ها",
+    "reviews": "نظرات",
+    "questions": "پرسش‌ها"
+  },
+  "returns": {
+    "title": "مرجوعی‌های مشتریان",
+    "columns": {
+      "id": "کد مرجوعی / آیدی",
+      "order": "سفارش",
+      "status": "وضعیت",
+      "items": "دلیل و یادداشت مشتری",
+      "createdAt": "تاریخ درخواست"
+    },
+    "customerNote": "یادداشت مشتری",
+    "other": "سایر",
+    "qty": "تعداد"
+  },
+  "reviews": {
+    "title": "نظرات",
+    "columns": {
+      "id": "شناسه",
+      "title": "عنوان",
+      "rating": "امتیاز",
+      "content": "متن نظر",
+      "status": "وضعیت",
+      "product": "محصول"
+    },
+    "reviewTitle": "عنوان نظر",
+    "reviewContent": "متن نظر",
+    "commands": {
+      "approve": "تایید",
+      "reject": "رد کردن",
+      "delete": "حذف",
+      "deleteConfirm": "آیا از حذف {{count}} نظر اطمینان دارید؟ این عمل غیرقابل بازگشت است."
+    },
+    "toast": {
+      "approveSuccess": "نظرات با موفقیت تایید شدند",
+      "approveError": "خطا در تایید نظرات",
+      "rejectSuccess": "نظرات با موفقیت رد شدند",
+      "rejectError": "خطا در رد نظرات",
+      "deleteSuccess": "نظرات با موفقیت حذف شدند",
+      "deleteError": "خطا در حذف نظرات"
+    }
+  },
+  "questions": {
+    "title": "پرسش‌ها",
+    "columns": {
+      "id": "شناسه",
+      "name": "نام",
+      "email": "ایمیل",
+      "question": "پرسش",
+      "answer": "پاسخ",
+      "status": "وضعیت",
+      "product": "محصول"
+    },
+    "questionText": "متن پرسش",
+    "answerText": "متن پاسخ",
+    "commands": {
+      "approve": "تایید",
+      "reject": "رد کردن",
+      "delete": "حذف",
+      "deleteConfirm": "آیا از حذف {{count}} پرسش اطمینان دارید؟ این عمل غیرقابل بازگشت است."
+    },
+    "toast": {
+      "approveSuccess": "پرسش‌ها با موفقیت تایید شدند",
+      "approveError": "خطا در تایید پرسش‌ها",
+      "rejectSuccess": "پرسش‌ها با موفقیت رد شدند",
+      "rejectError": "خطا در رد پرسش‌ها",
+      "deleteSuccess": "پرسش‌ها با موفقیت حذف شدند",
+      "deleteError": "خطا در حذف پرسش‌ها"
+    }
+  },
+  "common": {
+    "close": "بستن",
+    "selected": "{{count}} مورد انتخاب شده"
+  }
+}

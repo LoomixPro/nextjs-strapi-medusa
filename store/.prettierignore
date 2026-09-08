@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+build
+coverage
+next-env.d.ts
+public/sw.js
+public/workbox-*.js
+public/fallback-*.js
+public/swe-worker-*.js
+package-lock.json
+*.min.js

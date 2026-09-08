@@ -1,0 +1,68 @@
+{
+  "kind": "collectionType",
+  "collectionName": "campaigns",
+  "info": {
+    "singularName": "campaign",
+    "pluralName": "campaigns",
+    "displayName": "Campaign",
+    "description": "Marketing promotions and discount campaigns synchronized from Medusa."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "description": "Marketing campaign display name.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true
+    },
+    "medusaId": {
+      "type": "string",
+      "description": "Unique Medusa system ID (e.g. camp_...). Auto-synced; do NOT modify manually.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true,
+      "unique": true
+    },
+    "campaignIdentifier": {
+      "type": "string",
+      "description": "Promotional campaign promo code or identifier.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "startsAt": {
+      "type": "datetime",
+      "description": "Scheduled start date and time for the campaign.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "endsAt": {
+      "type": "datetime",
+      "description": "Scheduled end date and time for the campaign.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    }
+  }
+}

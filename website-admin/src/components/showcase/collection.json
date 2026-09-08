@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_showcase_collections",
+  "info": {
+    "displayName": "Collection Source",
+    "icon": "apps",
+    "description": "Select a specific Medusa collection"
+  },
+  "options": {},
+  "attributes": {
+    "collection": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::collection.collection"
+    },
+    "filterBy": {
+      "type": "enumeration",
+      "enum": [
+        "most_visited",
+        "discounted"
+      ],
+      "required": false
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_blog_videos",
+  "info": {
+    "displayName": "Video",
+    "icon": "slideshow",
+    "description": "Video element for blog posts"
+  },
+  "options": {},
+  "attributes": {
+    "videoUrl": {
+      "type": "string",
+      "required": true
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "imageAlt": {
+      "type": "string"
+    }
+  }
+}

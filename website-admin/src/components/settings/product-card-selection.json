@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_settings_product_card_selections",
+  "info": {
+    "displayName": "Product Card Selection",
+    "icon": "layout",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "storeCardType": {
+      "type": "string",
+      "default": "card-1",
+      "required": true
+    },
+    "collectionCardType": {
+      "type": "string",
+      "default": "card-1",
+      "required": true
+    },
+    "categoryCardType": {
+      "type": "string",
+      "default": "card-1",
+      "required": true
+    }
+  }
+}

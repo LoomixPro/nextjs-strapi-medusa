@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "categories",
+  "info": {
+    "singularName": "category",
+    "pluralName": "categories",
+    "displayName": "Category",
+    "description": "Product categories synchronized from Medusa."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "description": "Category display name.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true
+    },
+    "medusaId": {
+      "type": "string",
+      "description": "Unique Medusa system ID (e.g. pcat_...). Auto-synced; do NOT modify manually.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "required": true,
+      "unique": true
+    },
+    "medusaHandle": {
+      "type": "string",
+      "description": "Unique URL slug handle from Medusa (e.g. 'mens-clothing'). Auto-synced; do NOT modify manually.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "unique": true,
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "description": "Category description and SEO summary.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "collectionName": "components_about_about_feature_items",
+  "info": {
+    "displayName": "About Feature Item",
+    "icon": "star"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "icon_name": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "Sparkles",
+        "Target",
+        "Heart",
+        "Truck",
+        "Shield",
+        "Clock"
+      ]
+    }
+  }
+}

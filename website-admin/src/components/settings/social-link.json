@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_settings_social_links",
+  "info": {
+    "displayName": "Social Link",
+    "icon": "link",
+    "description": "Social media links configuration with URL and toggle status"
+  },
+  "options": {},
+  "attributes": {
+    "platform": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "twitter",
+        "github",
+        "linkedin",
+        "facebook",
+        "instagram",
+        "youtube",
+        "telegram",
+        "whatsapp"
+      ]
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

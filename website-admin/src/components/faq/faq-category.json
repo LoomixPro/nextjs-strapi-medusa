@@ -1,0 +1,39 @@
+{
+  "collectionName": "components_faq_faq_categories",
+  "info": {
+    "displayName": "FAQ Category",
+    "icon": "folder",
+    "description": "Category group containing multiple FAQ questions"
+  },
+  "options": {},
+  "attributes": {
+    "anchor_id": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "ShoppingBag",
+        "Package",
+        "RefreshCw",
+        "User",
+        "Mail",
+        "Phone",
+        "MessageCircle",
+        "HelpCircle"
+      ],
+      "default": "HelpCircle",
+      "required": true
+    },
+    "questions": {
+      "type": "component",
+      "repeatable": true,
+      "component": "ui.faq-item"
+    }
+  }
+}

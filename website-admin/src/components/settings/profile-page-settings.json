@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_settings_profile_page_settings",
+  "info": {
+    "displayName": "Profile Page Settings",
+    "icon": "user",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "template": {
+      "type": "string",
+      "default": "style-1"
+    }
+  }
+}

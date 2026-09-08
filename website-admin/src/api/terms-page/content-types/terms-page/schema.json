@@ -1,0 +1,43 @@
+{
+  "kind": "singleType",
+  "collectionName": "terms_pages",
+  "info": {
+    "singularName": "terms-page",
+    "pluralName": "terms-pages",
+    "displayName": "Terms Page",
+    "description": "Terms of Service page with dynamic blocks"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true
+    },
+    "blocks": {
+      "type": "dynamiczone",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "components": [
+        "terms.terms-hero",
+        "terms.terms-text-section",
+        "terms.terms-card-section",
+        "terms.terms-contact-cta"
+      ]
+    }
+  }
+}

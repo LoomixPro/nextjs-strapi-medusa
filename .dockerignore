@@ -1,0 +1,33 @@
+# =======================================================
+# Root .dockerignore — next-strapi-medusa
+# این فایل برای build context داکر است (context: .)
+# =======================================================
+
+# Secrets — هرگز داخل image نروند
+store-admin/.env
+store-admin/.env.*
+store-admin/.env.template
+
+# Dependencies — داخل container نصب می‌شوند
+store-admin/node_modules/
+store/.next/
+store/node_modules/
+
+# Git & IDE
+.git/
+.vscode/
+**/.DS_Store
+
+# Logs
+**/*.log
+**/build_error*.log
+
+# Other services — فقط store-admin نیاز است
+website-admin/
+store/
+loom-blocks-cli/
+loom-blocks-registry/
+loomix-cli/
+loomix-registry/
+Loomix-registry/
+next-16/

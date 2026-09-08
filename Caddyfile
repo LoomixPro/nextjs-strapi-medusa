@@ -1,0 +1,181 @@
+{
+	# Global options
+	email { $ACME_EMAIL:admin@example.com }
+	acme_ca https://acme-v02.api.letsencrypt.org/directory
+
+	# Disable HTTP/3 (QUIC) for maximum compatibility with mobile operators and VPNs
+	servers {
+		protocols h1 h2
+	}
+}
+
+# =============================================================================
+# Reusable Snippets
+# =============================================================================
+
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), camera=(), microphone=()"
+		-Server
+	}
+}
+
+# CSP for Storefront: allows images from CDNs/MinIO/S3 and connections to API, Analytics & Meilisearch.
+# Also allows Strapi Admin (https://admin.{$DOMAIN}, admin.local, localhost:1337) to embed preview iframes.
+(csp_storefront) {
+	header {
+		-X-Frame-Options
+		Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https: http:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://api.{$DOMAIN} https://analytics.{$DOMAIN} https://search.{$DOMAIN} https://search.local http://127.0.0.1:7700; frame-ancestors 'self' https://admin.{$DOMAIN} https://admin.local http://localhost:1337 http://127.0.0.1:1337"
+	}
+}
+
+# CSP for Backend/Admin/Monitoring UIs: strictly prevents framing/clickjacking
+(csp_admin) {
+	header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https: http:; frame-ancestors 'none'"
+}
+
+# JSON access logs — rotated and shipped to OpenObserve via Vector
+(access_log) {
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 50mb
+			roll_keep 10
+			roll_keep_for 720h
+		}
+		format json
+	}
+}
+
+# =============================================================================
+# Local / Development Hostnames (.local)
+# =============================================================================
+
+store.local {
+	tls internal
+	import access_log
+	header {
+		-X-Frame-Options
+		Content-Security-Policy "frame-ancestors 'self' https://admin.local http://localhost:1337 http://127.0.0.1:1337"
+	}
+	reverse_proxy storefront:8000
+}
+
+api.local {
+	tls internal
+	import access_log
+	handle_path /minio/* {
+		reverse_proxy minio:9000
+	}
+	handle {
+		reverse_proxy medusa:9000
+	}
+}
+
+admin.local {
+	tls internal
+	import access_log
+	reverse_proxy strapi:1337
+}
+
+analytics.local {
+	tls internal
+	import access_log
+	reverse_proxy umami:3000
+}
+
+monitor.local {
+	tls internal
+	import access_log
+	reverse_proxy openobserve:5080
+}
+
+search.local {
+	tls internal
+	import access_log
+	reverse_proxy meilisearch:7700
+}
+
+# =============================================================================
+# Production Hostnames (Auto HTTPS with Let's Encrypt / ZeroSSL)
+# =============================================================================
+
+{ $DOMAIN }, www. { $DOMAIN } {
+	encode zstd gzip
+	import security_headers
+	import csp_storefront
+	import access_log
+
+	# Canonicalize www to root domain
+	@www host www. { $DOMAIN }
+	redir @www https:// { $DOMAIN } { uri } permanent
+
+	# High-performance caching for Next.js and static assets
+	@static {
+		path /_next/static/* /_next/image* /icons/* *.woff2 *.woff *.ico *.svg *.css *.js
+	}
+	header @static {
+		Cache-Control "public, max-age=31536000, immutable"
+		defer
+	}
+
+	request_body {
+		max_size 20MB
+	}
+
+	reverse_proxy storefront:8000
+}
+
+api. { $DOMAIN } {
+	encode zstd gzip
+	import security_headers
+	import access_log
+
+	request_body {
+		max_size 50MB
+	}
+
+	handle_path /minio/* {
+		reverse_proxy minio:9000
+	}
+	handle {
+		reverse_proxy medusa:9000
+	}
+}
+
+search. { $DOMAIN } {
+	encode zstd gzip
+	import security_headers
+	import access_log
+
+	reverse_proxy meilisearch:7700
+}
+
+admin. { $DOMAIN } {
+	encode zstd gzip
+	import security_headers
+	import csp_admin
+	import access_log
+
+	reverse_proxy strapi:1337
+}
+
+analytics. { $DOMAIN } {
+	encode zstd gzip
+	import security_headers
+	import csp_admin
+	import access_log
+	reverse_proxy umami:3000
+}
+
+monitor. { $DOMAIN } {
+	encode zstd gzip
+	import security_headers
+	import csp_admin
+	import access_log
+
+	reverse_proxy openobserve:5080
+}

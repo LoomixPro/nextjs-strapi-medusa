@@ -1,0 +1,44 @@
+{
+  "kind": "singleType",
+  "collectionName": "privacy_pages",
+  "info": {
+    "singularName": "privacy-page",
+    "pluralName": "privacy-pages",
+    "displayName": "Privacy Page",
+    "description": "Privacy Policy page with dynamic blocks"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true
+    },
+    "blocks": {
+      "type": "dynamiczone",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "components": [
+        "privacy.privacy-hero",
+        "privacy.privacy-card-section",
+        "privacy.privacy-grid-section",
+        "privacy.privacy-text-section",
+        "privacy.privacy-contact-cta"
+      ]
+    }
+  }
+}

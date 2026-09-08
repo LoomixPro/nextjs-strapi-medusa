@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_terms_terms_heroes",
+  "info": {
+    "displayName": "Terms Hero",
+    "icon": "landscape",
+    "description": "Hero section of the Terms page"
+  },
+  "options": {},
+  "attributes": {
+    "badge": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_settings_product_page_settings",
+  "info": {
+    "displayName": "Product Page Settings",
+    "icon": "layout",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "template": {
+      "type": "string",
+      "default": "style-1"
+    }
+  }
+}

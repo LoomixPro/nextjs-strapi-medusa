@@ -1,0 +1,41 @@
+{
+  "collectionName": "components_privacy_privacy_contact_ctas",
+  "info": {
+    "displayName": "Privacy Contact CTA",
+    "icon": "discuss"
+  },
+  "options": {},
+  "attributes": {
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "Shield",
+        "Lock",
+        "Eye",
+        "UserCheck",
+        "Mail",
+        "Cookie",
+        "Globe",
+        "FileText"
+      ],
+      "default": "Mail",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "button_text": {
+      "type": "string",
+      "required": true
+    },
+    "button_link": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

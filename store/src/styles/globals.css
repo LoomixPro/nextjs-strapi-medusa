@@ -1,0 +1,491 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  option {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}
+
+/* ===== Theme Palettes =====
+ * Defined OUTSIDE @layer base so they always override base variables.
+ * CSS Cascade Layers: unlayered styles beat layered styles.
+ */
+
+/* --- Light Palettes --- */
+
+.palette-light-arctic:not(.dark) {
+  --background: 204 33.3% 97.1%;
+  --foreground: 213.3 31% 17.1%;
+  --card: 204 33.3% 97.1%;
+  --card-foreground: 213.3 31% 17.1%;
+  --popover: 204 33.3% 97.1%;
+  --popover-foreground: 213.3 31% 17.1%;
+  --primary: 213.3 31% 17.1%;
+  --primary-foreground: 204 33.3% 97.1%;
+  --secondary: 210 24.2% 87.1%;
+  --secondary-foreground: 213.3 31% 17.1%;
+  --muted: 210 24.2% 87.1%;
+  --muted-foreground: 207.1 18.6% 44.3%;
+  --accent: 206.3 26.5% 69.6%;
+  --accent-foreground: 213.3 29% 6.1%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 210 24.2% 87.1%;
+  --input: 210 24.2% 87.1%;
+  --ring: 207.1 18.6% 44.3%;
+}
+
+.palette-light-futuristic:not(.dark) {
+  --background: 42.9 43.8% 93.7%;
+  --foreground: 211 52.7% 10.8%;
+  --card: 42.9 43.8% 93.7%;
+  --card-foreground: 211 52.7% 10.8%;
+  --popover: 42.9 43.8% 93.7%;
+  --popover-foreground: 211 52.7% 10.8%;
+  --primary: 260.5 48% 34.7%;
+  --primary-foreground: 42.9 43.8% 93.7%;
+  --secondary: 273.3 7.7% 77.1%;
+  --secondary-foreground: 260.5 48% 34.7%;
+  --muted: 273.3 7.7% 77.1%;
+  --muted-foreground: 260.5 48% 34.7%;
+  --accent: 28.7 100% 50%;
+  --accent-foreground: 211 52.7% 10.8%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 273.3 7.7% 77.1%;
+  --input: 273.3 7.7% 77.1%;
+  --ring: 227.1 100% 78%;
+}
+
+.palette-light-emerald:not(.dark) {
+  --background: 150 25% 98%;
+  --foreground: 160 50% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 160 50% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 160 50% 12%;
+  --primary: 160 84% 30%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 155 30% 90%;
+  --secondary-foreground: 160 60% 15%;
+  --muted: 155 20% 92%;
+  --muted-foreground: 160 20% 40%;
+  --accent: 28 100% 54%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 155 25% 86%;
+  --input: 155 25% 86%;
+  --ring: 160 84% 30%;
+}
+
+/* --- Dark Palettes --- */
+
+.palette-dark-volcanic.dark {
+  --background: 0 0% 4.3%;
+  --foreground: 45 13.3% 94.1%;
+  --card: 240 5.5% 10.8%;
+  --card-foreground: 45 13.3% 94.1%;
+  --popover: 240 5.5% 10.8%;
+  --popover-foreground: 45 13.3% 94.1%;
+  --primary: 18.1 100% 50%;
+  --primary-foreground: 0 0% 4.3%;
+  --secondary: 15 2.8% 28.2%;
+  --secondary-foreground: 45 13.3% 94.1%;
+  --muted: 240 5.5% 10.8%;
+  --muted-foreground: 45 13.3% 94.1%;
+  --accent: 12.9 100% 27.3%;
+  --accent-foreground: 45 13.3% 94.1%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 15 2.8% 28.2%;
+  --input: 15 2.8% 28.2%;
+  --ring: 18.1 100% 50%;
+}
+
+.palette-dark-golden.dark {
+  --background: 240 15.4% 5.1%;
+  --foreground: 40.8 36.2% 86.5%;
+  --card: 36 9.8% 10%;
+  --card-foreground: 40.8 36.2% 86.5%;
+  --popover: 36 9.8% 10%;
+  --popover-foreground: 40.8 36.2% 86.5%;
+  --primary: 45.9 64.6% 52.4%;
+  --primary-foreground: 36 9.8% 10%;
+  --secondary: 218.2 10.9% 19.8%;
+  --secondary-foreground: 40.8 36.2% 86.5%;
+  --muted: 36 9.8% 10%;
+  --muted-foreground: 40.8 36.2% 86.5%;
+  --accent: 28.9 56.6% 46.1%;
+  --accent-foreground: 40.8 36.2% 86.5%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 218.2 10.9% 19.8%;
+  --input: 218.2 10.9% 19.8%;
+  --ring: 45.9 64.6% 52.4%;
+}
+
+@layer utilities {
+  /* Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  input:focus ~ label,
+  input:not(:placeholder-shown) ~ label {
+    @apply -translate-y-2 text-xsmall-regular ltr:left-0 rtl:right-0;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    border: 1px solid #e5e7eb;
+    -webkit-text-fill-color: #09090b;
+    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus,
+  .dark textarea:-webkit-autofill,
+  .dark textarea:-webkit-autofill:hover,
+  .dark textarea:-webkit-autofill:focus,
+  .dark select:-webkit-autofill,
+  .dark select:-webkit-autofill:hover,
+  .dark select:-webkit-autofill:focus {
+    border: 1px solid #3f3f46;
+    -webkit-text-fill-color: #f4f4f5;
+    -webkit-box-shadow: 0 0 0px 1000px #27272a inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+  }
+}
+
+@layer components {
+  .content-container {
+    @apply max-w-[1440px] w-full mx-auto px-6;
+  }
+
+  .contrast-btn {
+    @apply px-4 py-2 border border-black rounded-full hover:bg-black hover:text-white transition-colors duration-200 ease-in;
+  }
+
+  .text-xsmall-regular {
+    @apply text-[10px] leading-4 font-normal;
+  }
+
+  .text-small-regular {
+    @apply text-xs leading-5 font-normal;
+  }
+
+  .text-small-semi {
+    @apply text-xs leading-5 font-semibold;
+  }
+
+  .text-base-regular {
+    @apply text-sm leading-6 font-normal;
+  }
+
+  .text-base-semi {
+    @apply text-sm leading-6 font-semibold;
+  }
+
+  .text-large-regular {
+    @apply text-base leading-6 font-normal;
+  }
+
+  .text-large-semi {
+    @apply text-base leading-6 font-semibold;
+  }
+
+  .text-xl-regular {
+    @apply text-2xl leading-[36px] font-normal;
+  }
+
+  .text-xl-semi {
+    @apply text-2xl leading-[36px] font-semibold;
+  }
+
+  .text-2xl-regular {
+    @apply text-[30px] leading-[48px] font-normal;
+  }
+
+  .text-2xl-semi {
+    @apply text-[30px] leading-[48px] font-semibold;
+  }
+
+  .text-3xl-regular {
+    @apply text-[32px] leading-[44px] font-normal;
+  }
+
+  .text-3xl-semi {
+    @apply text-[32px] leading-[44px] font-semibold;
+  }
+}
+
+/* Fix header shift when scroll is locked */
+body[data-scroll-locked] header {
+  margin-right: var(--removed-body-scroll-bar-size) !important;
+}
+
+/* Reset letter-spacing for RTL layouts to prevent broken Persian typography */
+[dir="rtl"] {
+  letter-spacing: 0em !important;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+}
+
+.reveal.active {
+  animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slow-pan {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  50% {
+    transform: scale(1.05) translate(-1%, -1%);
+  }
+
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+.animate-slow-pan {
+  animation: slow-pan 20s ease-in-out infinite;
+}
+
+.reveal-delay-100 {
+  animation-delay: 100ms !important;
+}
+
+.reveal-delay-200 {
+  animation-delay: 200ms !important;
+}
+
+.reveal-delay-300 {
+  animation-delay: 300ms !important;
+}
+
+@keyframes scroll-light {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(200%);
+  }
+}
+
+.animate-scroll-light {
+  animation: scroll-light 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Custom View Transition for Theme Toggling */
+::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: theme-swipe-down 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  mix-blend-mode: normal;
+}
+
+@keyframes theme-swipe-down {
+  from {
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+  }
+
+  to {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+/* Fix select option background and text color to prevent white-on-white in some browsers/OS */
+select option {
+  background-color: #ffffff !important;
+  color: #09090b !important;
+}
+
+.dark select option {
+  background-color: #18181b !important;
+  color: #f4f4f5 !important;
+}
+
+/* ===== Custom Minimal Scrollbars ===== */
+
+/* Utility to completely remove scrollbars */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Ultra-minimal custom scrollbar for dropdowns and sidebar lists */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 9999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Global browser scrollbar smoothing */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.45);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
+}

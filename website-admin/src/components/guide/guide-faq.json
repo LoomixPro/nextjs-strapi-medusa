@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_guide_guide_faqs",
+  "info": {
+    "displayName": "Guide FAQ Section",
+    "icon": "question",
+    "description": "Accordion list of FAQs specifically for sizes and fits"
+  },
+  "options": {},
+  "attributes": {
+    "faq_title": {
+      "type": "string",
+      "required": true
+    },
+    "faq_items": {
+      "type": "component",
+      "repeatable": true,
+      "component": "ui.faq-item"
+    }
+  }
+}

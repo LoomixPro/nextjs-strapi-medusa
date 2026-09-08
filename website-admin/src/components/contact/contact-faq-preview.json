@@ -1,0 +1,30 @@
+{
+  "collectionName": "components_contact_contact_faq_previews",
+  "info": {
+    "displayName": "Contact FAQ Preview",
+    "icon": "bulletList"
+  },
+  "options": {},
+  "attributes": {
+    "button_link": {
+      "type": "string",
+      "required": true
+    },
+    "button_text": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "faq_items": {
+      "type": "component",
+      "repeatable": true,
+      "component": "contact.contact-faq-item"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

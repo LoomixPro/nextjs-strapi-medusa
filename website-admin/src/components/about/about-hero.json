@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_about_about_heroes",
+  "info": {
+    "displayName": "About Hero",
+    "icon": "landscape",
+    "description": "Hero section of the About page"
+  },
+  "options": {},
+  "attributes": {
+    "badge": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

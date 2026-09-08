@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_support_return_heroes",
+  "info": {
+    "displayName": "Return Hero",
+    "icon": "landscape"
+  },
+  "options": {},
+  "attributes": {
+    "badge": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "button_text": {
+      "type": "string"
+    },
+    "button_link": {
+      "type": "string"
+    }
+  }
+}

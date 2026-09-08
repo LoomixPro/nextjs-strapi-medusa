@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_guide_size_categories",
+  "info": {
+    "displayName": "Size Category",
+    "icon": "folder",
+    "description": "Category tabs containing lists of size charts"
+  },
+  "options": {},
+  "attributes": {
+    "category_name": {
+      "type": "string",
+      "required": true
+    },
+    "category_value": {
+      "type": "string",
+      "required": true
+    },
+    "charts": {
+      "type": "component",
+      "repeatable": true,
+      "component": "guide.size-chart"
+    }
+  }
+}

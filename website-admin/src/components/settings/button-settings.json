@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_settings_button_settings",
+  "info": {
+    "displayName": "Button Settings",
+    "icon": "cog",
+    "description": "Configuration for the global button style"
+  },
+  "options": {},
+  "attributes": {
+    "style": {
+      "type": "string",
+      "default": "style-1"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_showcase_campaigns",
+  "info": {
+    "displayName": "Campaign Source",
+    "icon": "star",
+    "description": "Select a custom campaign"
+  },
+  "options": {},
+  "attributes": {
+    "campaign": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::campaign.campaign"
+    }
+  }
+}

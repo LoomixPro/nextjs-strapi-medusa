@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_settings_store_page_settings",
+  "info": {
+    "displayName": "Store Page Settings",
+    "icon": "shopping-cart",
+    "description": "Settings for the store listing page"
+  },
+  "options": {},
+  "attributes": {
+    "template": {
+      "type": "string",
+      "default": "style-1"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}

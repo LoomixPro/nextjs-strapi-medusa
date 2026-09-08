@@ -1,0 +1,213 @@
+{
+  "kind": "collectionType",
+  "collectionName": "hp_section_showcases",
+  "info": {
+    "singularName": "hp-section-showcase",
+    "pluralName": "hp-section-showcases",
+    "displayName": "Section (Showcase)",
+    "description": "Product showcase grid supporting automatic queries (collection, category, campaign, all) or manual product selection."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "adminDisplayTitle": {
+      "type": "string",
+      "description": "Internal name to identify this showcase section in Strapi admin lists."
+    },
+    "title": {
+      "type": "string",
+      "description": "Main title heading of the product showcase section.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "badge": {
+      "type": "string",
+      "description": "Top badge or category tag displayed above the showcase title (e.g. 'FEATURED DROP').",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "Short subtitle or introductory paragraph under the title.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "source": {
+      "type": "enumeration",
+      "description": "Product query source: All products, specific Collection, Category, Marketing Campaign, or Custom picked items.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": "all",
+      "enum": [
+        "all",
+        "collection",
+        "category",
+        "campaign",
+        "custom"
+      ]
+    },
+    "style": {
+      "type": "string",
+      "description": "Showcase layout and grid style identifier (e.g. style-1, style-2).",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": "style-1"
+    },
+    "headerStyle": {
+      "type": "string",
+      "description": "Header title and badge typography style (e.g. style-1, style-2).",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": "style-1"
+    },
+    "cardStyle": {
+      "type": "string",
+      "description": "Visual style for individual product cards in the grid (e.g. card-1, card-2, card-3).",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": "card-1"
+    },
+    "productCount": {
+      "type": "integer",
+      "description": "Maximum number of products to query and display (default: 5).",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": 5
+    },
+    "collection": {
+      "type": "component",
+      "description": "Collection selection settings when source is 'collection'.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "source"
+            },
+            "collection"
+          ]
+        }
+      },
+      "component": "showcase.collection",
+      "repeatable": false
+    },
+    "category": {
+      "type": "component",
+      "description": "Category selection settings when source is 'category'.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "source"
+            },
+            "category"
+          ]
+        }
+      },
+      "component": "showcase.category",
+      "repeatable": false
+    },
+    "campaign": {
+      "type": "component",
+      "description": "Marketing campaign settings when source is 'campaign'.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "source"
+            },
+            "campaign"
+          ]
+        }
+      },
+      "component": "showcase.campaign",
+      "repeatable": false
+    },
+    "custom": {
+      "type": "component",
+      "description": "Manually selected products when source is 'custom'.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "source"
+            },
+            "custom"
+          ]
+        }
+      },
+      "component": "showcase.custom",
+      "repeatable": false
+    },
+    "all": {
+      "type": "component",
+      "description": "All products settings and optional sorting filters when source is 'all'.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "source"
+            },
+            "all"
+          ]
+        }
+      },
+      "component": "showcase.all-items",
+      "repeatable": false
+    }
+  }
+}

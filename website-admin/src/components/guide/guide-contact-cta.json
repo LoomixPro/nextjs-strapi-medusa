@@ -1,0 +1,35 @@
+{
+  "collectionName": "components_guide_guide_contact_ctas",
+  "info": {
+    "displayName": "Guide Contact CTA",
+    "icon": "discuss",
+    "description": "Call-to-action block for user support on sizing guide page"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "primary_button_text": {
+      "type": "string",
+      "required": true
+    },
+    "primary_button_link": {
+      "type": "string",
+      "required": true
+    },
+    "secondary_button_text": {
+      "type": "string",
+      "required": true
+    },
+    "secondary_button_link": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_showcase_customs",
+  "info": {
+    "displayName": "Custom Products",
+    "icon": "shoppingCart",
+    "description": "Manually select specific products"
+  },
+  "options": {},
+  "attributes": {
+    "products": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product.product"
+    }
+  }
+}

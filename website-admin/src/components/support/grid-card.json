@@ -1,0 +1,34 @@
+{
+  "collectionName": "components_support_grid_cards",
+  "info": {
+    "displayName": "Grid Card",
+    "icon": "grid"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "Clock",
+        "Truck",
+        "DollarSign",
+        "RefreshCw",
+        "FileText",
+        "CheckCircle2",
+        "Package",
+        "XCircle",
+        "AlertCircle",
+        "Mail"
+      ],
+      "required": true
+    }
+  }
+}

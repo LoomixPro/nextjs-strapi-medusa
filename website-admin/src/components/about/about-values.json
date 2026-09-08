@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_about_about_values",
+  "info": {
+    "displayName": "About Values",
+    "icon": "heart",
+    "description": "Values section of the About page"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "items": {
+      "type": "component",
+      "repeatable": true,
+      "component": "about.about-value-item"
+    }
+  }
+}

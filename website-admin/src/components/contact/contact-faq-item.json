@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_contact_contact_faq_items",
+  "info": {
+    "displayName": "Contact FAQ Item",
+    "icon": "question"
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

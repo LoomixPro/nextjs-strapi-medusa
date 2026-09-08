@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_settings_checkout_page_settings",
+  "info": {
+    "displayName": "Checkout Page Settings",
+    "icon": "layout",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "template": {
+      "type": "string",
+      "default": "style-1"
+    }
+  }
+}

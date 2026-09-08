@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "dictionary_entries",
+  "info": {
+    "singularName": "dictionary-entry",
+    "pluralName": "dictionary-entries",
+    "displayName": "Dictionary Entry",
+    "description": "Translation dictionary mapping product option titles and variant values into all supported languages."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "key": {
+      "type": "string",
+      "description": "Original English key (e.g. 'Color', 'Black', 'Size', 'Large').",
+      "required": true,
+      "unique": true
+    },
+    "translations": {
+      "type": "component",
+      "description": "Localized text values for each supported storefront locale (e.g. ar-AE, en-US).",
+      "repeatable": true,
+      "component": "settings.translation-item"
+    }
+  }
+}

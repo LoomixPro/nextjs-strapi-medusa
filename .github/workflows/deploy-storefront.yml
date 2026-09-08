@@ -1,0 +1,125 @@
+name: Deploy Storefront
+
+on:
+  workflow_dispatch:
+    inputs:
+      component_path:
+        description: "Optional Loom component path to sync before deploy"
+        required: false
+        type: string
+      action:
+        description: "Sync action when component_path is provided"
+        required: false
+        default: add
+        type: choice
+        options:
+          - add
+          - remove
+      commit_changes:
+        description: "Commit synced component changes back to main"
+        required: false
+        default: true
+        type: boolean
+      auto_deploy:
+        description: "Deploy to VPS after syncing"
+        required: false
+        default: true
+        type: boolean
+  repository_dispatch:
+    types: [deploy-storefront]
+
+concurrency:
+  group: deploy-storefront
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  sync-and-commit:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+      GITHUB_PAT: ${{ secrets.LOOM_REGISTRY_PAT }}
+    outputs:
+      auto_deploy: ${{ steps.payload.outputs.auto_deploy }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve dispatch payload
+        id: payload
+        run: |
+          COMPONENT_PATH="${{ github.event.inputs.component_path }}"
+          ACTION="${{ github.event.inputs.action }}"
+          COMMIT_CHANGES="${{ github.event.inputs.commit_changes }}"
+          AUTO_DEPLOY="${{ github.event.inputs.auto_deploy }}"
+
+          if [ -n "${{ github.event.client_payload.component_path }}" ]; then
+            COMPONENT_PATH="${{ github.event.client_payload.component_path }}"
+          fi
+
+          if [ -n "${{ github.event.client_payload.action }}" ]; then
+            ACTION="${{ github.event.client_payload.action }}"
+          fi
+
+          # Read auto_deploy from client_payload, default to true if not present
+          if [ "${{ github.event.client_payload.auto_deploy }}" != "" ]; then
+            AUTO_DEPLOY="${{ github.event.client_payload.auto_deploy }}"
+          fi
+
+          echo "commit_changes=${COMMIT_CHANGES:-true}" >> "$GITHUB_OUTPUT"
+          echo "auto_deploy=${AUTO_DEPLOY:-true}" >> "$GITHUB_OUTPUT"
+
+          BATCH_JSON='${{ github.event.client_payload.batch }}'
+          if [ -n "$BATCH_JSON" ] && [ "$BATCH_JSON" != "null" ]; then
+             echo "batch=$BATCH_JSON" >> "$GITHUB_OUTPUT"
+          else
+             if [ -n "$COMPONENT_PATH" ]; then
+                echo "batch=[{\"action\":\"${ACTION:-add}\",\"componentPath\":\"$COMPONENT_PATH\"}]" >> "$GITHUB_OUTPUT"
+             else
+                echo "batch=[]" >> "$GITHUB_OUTPUT"
+             fi
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Sync Loom component
+        if: steps.payload.outputs.batch != '[]'
+        run: |
+          echo '${{ steps.payload.outputs.batch }}' > batch.json
+          cat batch.json | jq -c '.[]' | while read i; do
+            ACTION=$(echo $i | jq -r '.action')
+            COMPONENT=$(echo $i | jq -r '.componentPath')
+            echo "Syncing $COMPONENT ($ACTION)..."
+            node scripts/sync-loom-component.js "$ACTION" "$COMPONENT"
+          done
+
+      - name: Commit synced component changes
+        if: steps.payload.outputs.batch != '[]' && steps.payload.outputs.commit_changes == 'true'
+        run: |
+          if git diff --quiet; then
+            echo "No component changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add store/src/modules
+          git add -u store/src/modules
+          git commit -m "chore(storefront): sync components from Loom registry [skip ci]"
+          git push
+
+  trigger-build:
+    needs: sync-and-commit
+    if: needs.sync-and-commit.outputs.auto_deploy == 'true'
+    uses: ./.github/workflows/build-storefront.yml
+    secrets: inherit

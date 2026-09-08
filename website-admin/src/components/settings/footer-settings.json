@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_settings_footer_settings",
+  "info": {
+    "displayName": "Footer Settings",
+    "icon": "layout",
+    "description": "Footer configuration including logo, descriptions, copyrights, and social links"
+  },
+  "options": {},
+  "attributes": {
+    "footerStyle": {
+      "type": "string",
+      "default": "style-1"
+    },
+    "logoLight": {
+      "type": "component",
+      "component": "settings.logo-config",
+      "repeatable": false,
+      "required": false
+    },
+    "logoDark": {
+      "type": "component",
+      "component": "settings.logo-config",
+      "repeatable": false,
+      "required": false
+    },
+    "translations": {
+      "type": "component",
+      "component": "settings.footer-translation",
+      "repeatable": true
+    },
+    "socialLinks": {
+      "type": "component",
+      "component": "settings.social-link",
+      "repeatable": true
+    }
+  }
+}

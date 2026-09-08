@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_settings_login_page_settings",
+  "info": {
+    "displayName": "Login Page Settings",
+    "icon": "lock",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "template": {
+      "type": "string",
+      "default": "style-1"
+    },
+    "loginMethods": {
+      "type": "enumeration",
+      "required": true,
+      "default": "email",
+      "enum": [
+        "email",
+        "phone",
+        "both"
+      ]
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

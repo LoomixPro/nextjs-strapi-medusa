@@ -1,0 +1,30 @@
+{
+  "collectionName": "components_settings_theme_settings",
+  "info": {
+    "displayName": "Theme Settings",
+    "icon": "paint-brush",
+    "description": "Configuration for the theme palettes"
+  },
+  "options": {},
+  "attributes": {
+    "lightPalette": {
+      "type": "enumeration",
+      "enum": [
+        "default",
+        "arctic",
+        "futuristic",
+        "emerald"
+      ],
+      "default": "default"
+    },
+    "darkPalette": {
+      "type": "enumeration",
+      "enum": [
+        "default",
+        "volcanic",
+        "golden"
+      ],
+      "default": "default"
+    }
+  }
+}

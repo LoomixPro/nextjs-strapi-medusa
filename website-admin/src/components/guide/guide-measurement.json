@@ -1,0 +1,41 @@
+{
+  "collectionName": "components_guide_guide_measurements",
+  "info": {
+    "displayName": "Guide Measurement Instructions",
+    "icon": "ruler",
+    "description": "Section containing steps and tips on how to measure"
+  },
+  "options": {},
+  "attributes": {
+    "how_to_measure_title": {
+      "type": "string",
+      "required": true
+    },
+    "measurement_instructions_title": {
+      "type": "string",
+      "required": true
+    },
+    "measurement_steps": {
+      "type": "component",
+      "repeatable": true,
+      "component": "guide.measurement-step"
+    },
+    "measurement_tips_title": {
+      "type": "string",
+      "required": true
+    },
+    "measurement_tips": {
+      "type": "component",
+      "repeatable": true,
+      "component": "guide.measurement-tip"
+    },
+    "visual_guide_title": {
+      "type": "string",
+      "required": true
+    },
+    "visual_guide_description": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

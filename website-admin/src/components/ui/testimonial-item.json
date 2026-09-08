@@ -1,0 +1,36 @@
+{
+  "collectionName": "components_ui_testimonial_items",
+  "info": {
+    "displayName": "Testimonial Item",
+    "icon": "emotionHappy",
+    "description": "A customer review / testimonial item with rating, avatar, and quote."
+  },
+  "options": {},
+  "attributes": {
+    "author_name": {
+      "type": "string",
+      "required": true
+    },
+    "author_role": {
+      "type": "string"
+    },
+    "content": {
+      "type": "text",
+      "required": true
+    },
+    "rating": {
+      "type": "integer",
+      "default": 5,
+      "min": 1,
+      "max": 5
+    },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

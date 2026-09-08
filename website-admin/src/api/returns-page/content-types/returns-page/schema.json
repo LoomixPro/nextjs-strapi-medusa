@@ -1,0 +1,43 @@
+{
+  "kind": "singleType",
+  "collectionName": "returns_pages",
+  "info": {
+    "singularName": "returns-page",
+    "pluralName": "returns-pages",
+    "displayName": "Returns Page",
+    "description": "Returns & Refunds Policy page with dynamic blocks"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true
+    },
+    "blocks": {
+      "type": "dynamiczone",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "components": [
+        "support.return-hero",
+        "support.section-grid",
+        "support.return-faq",
+        "support.contact-cta"
+      ]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_about_about_promises",
+  "info": {
+    "displayName": "About Promise",
+    "icon": "write",
+    "description": "Promise section of the About page"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "paragraphs": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

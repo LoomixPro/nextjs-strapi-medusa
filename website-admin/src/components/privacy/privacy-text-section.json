@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_privacy_privacy_text_sections",
+  "info": {
+    "displayName": "Privacy Text Section",
+    "icon": "write"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "section_id": {
+      "type": "string",
+      "required": true
+    },
+    "content": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

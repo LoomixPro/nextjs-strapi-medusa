@@ -1,0 +1,38 @@
+{
+  "collectionName": "components_privacy_privacy_card_sections",
+  "info": {
+    "displayName": "Privacy Card Section",
+    "icon": "file",
+    "description": "Simple card-styled content section for Privacy Policy"
+  },
+  "options": {},
+  "attributes": {
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "Shield",
+        "Lock",
+        "Eye",
+        "UserCheck",
+        "Mail",
+        "Cookie",
+        "Globe",
+        "FileText"
+      ],
+      "default": "FileText",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "section_id": {
+      "type": "string",
+      "required": true
+    },
+    "content": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

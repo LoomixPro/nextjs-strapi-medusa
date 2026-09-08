@@ -1,0 +1,79 @@
+{
+  "customRoutes": {
+    "returns": "Returns",
+    "reviews": "Reviews",
+    "questions": "Questions"
+  },
+  "returns": {
+    "title": "Customer Returns",
+    "columns": {
+      "id": "Return Code / ID",
+      "order": "Order",
+      "status": "Status",
+      "items": "Reason & Customer Note",
+      "createdAt": "Date Requested"
+    },
+    "customerNote": "Customer Note",
+    "other": "Other",
+    "qty": "Qty"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "columns": {
+      "id": "ID",
+      "title": "Title",
+      "rating": "Rating",
+      "content": "Content",
+      "status": "Status",
+      "product": "Product"
+    },
+    "reviewTitle": "Review Title",
+    "reviewContent": "Review Content",
+    "commands": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete {{count}} review(s)? This cannot be undone."
+    },
+    "toast": {
+      "approveSuccess": "Reviews approved",
+      "approveError": "Failed to approve reviews",
+      "rejectSuccess": "Reviews rejected",
+      "rejectError": "Failed to reject reviews",
+      "deleteSuccess": "Reviews deleted",
+      "deleteError": "Failed to delete reviews"
+    }
+  },
+  "questions": {
+    "title": "Questions",
+    "columns": {
+      "id": "ID",
+      "name": "Name",
+      "email": "Email",
+      "question": "Question",
+      "answer": "Answer",
+      "status": "Status",
+      "product": "Product"
+    },
+    "questionText": "Question Text",
+    "answerText": "Answer Text",
+    "commands": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete {{count}} question(s)? This cannot be undone."
+    },
+    "toast": {
+      "approveSuccess": "Questions approved",
+      "approveError": "Failed to approve questions",
+      "rejectSuccess": "Questions rejected",
+      "rejectError": "Failed to reject questions",
+      "deleteSuccess": "Questions deleted",
+      "deleteError": "Failed to delete questions"
+    }
+  },
+  "common": {
+    "close": "Close",
+    "selected": "{{count}} selected"
+  }
+}

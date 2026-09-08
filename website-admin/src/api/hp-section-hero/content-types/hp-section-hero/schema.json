@@ -1,0 +1,123 @@
+{
+  "kind": "collectionType",
+  "collectionName": "hp_section_heroes",
+  "info": {
+    "singularName": "hp-section-hero",
+    "pluralName": "hp-section-heroes",
+    "displayName": "Section (Hero)",
+    "description": "Hero section with banner images, title, badge, and call-to-action button."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "adminDisplayTitle": {
+      "type": "string",
+      "description": "Internal name to identify this hero section in Strapi admin lists."
+    },
+    "title": {
+      "type": "string",
+      "description": "Main headline displayed prominently in the hero section.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "style": {
+      "type": "string",
+      "description": "Visual component style identifier (e.g. style-1, style-2).",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": "style-1"
+    },
+    "badge": {
+      "type": "string",
+      "description": "Top tag or promo badge text displayed above the headline (e.g. 'NEW ARRIVALS 2026').",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "description": "Subtitle or introductory paragraph under the hero headline.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "buttonText": {
+      "type": "string",
+      "description": "Call-to-action button label (e.g. 'Shop Collection' or 'Explore Now').",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "buttonLink": {
+      "type": "string",
+      "description": "Destination URL or relative storefront path for the CTA button (e.g. '/products' or '/collections/summer').",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "highlights": {
+      "type": "component",
+      "repeatable": true,
+      "component": "ui.hero-highlight",
+      "description": "Trust badges or highlights displayed under the CTA button.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "products": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product.product",
+      "description": "Select specific Medusa products to showcase in Hero styles (e.g. Hero Style-1 slides)."
+    },
+    "mainImages": {
+      "type": "media",
+      "description": "Primary high-resolution hero banner image(s).",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "sideImages": {
+      "type": "media",
+      "description": "Optional secondary or lifestyle images used in multi-image hero styles.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "multiple": true,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "collectionName": "components_support_section_grids",
+  "info": {
+    "displayName": "Section Grid",
+    "icon": "grid"
+  },
+  "options": {},
+  "attributes": {
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "Clock",
+        "Truck",
+        "DollarSign",
+        "RefreshCw",
+        "FileText",
+        "CheckCircle2",
+        "Package",
+        "XCircle",
+        "AlertCircle",
+        "Mail"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "section_id": {
+      "type": "string",
+      "required": true
+    },
+    "intro_text": {
+      "type": "text"
+    },
+    "cards": {
+      "type": "component",
+      "repeatable": true,
+      "component": "support.grid-card"
+    },
+    "footer_text": {
+      "type": "text"
+    }
+  }
+}

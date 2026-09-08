@@ -1,0 +1,116 @@
+# =======================================================
+# Vector Configuration for OpenObserve Log & Metrics Shipping
+# =======================================================
+# - docker_logs: Collects all Docker container logs (stdout/stderr)
+# - caddy_access: Ingests structured JSON access logs from Caddy (/var/log/caddy/access.log)
+# - host_metrics: Collects CPU, RAM, Disk, Network from the host server
+# - cadvisor_metrics: Per-container metrics (CPU/RAM/Network) via cAdvisor
+# Note: docker_stats stream is handled by docker-stats-exporter container
+
+# -------------------------------------------------------
+# Sources
+# -------------------------------------------------------
+sources:
+  docker_logs:
+    type: docker_logs
+    exclude_containers:
+      - vector
+      - minio-setup
+      - cloudflared
+
+  caddy_access:
+    type: file
+    include:
+      - /var/log/caddy/access.log
+    read_from: beginning
+
+  host_metrics:
+    type: host_metrics
+    scrape_interval_secs: 15
+    collectors:
+      - cpu
+      - memory
+      - disk
+      - network
+      - filesystem
+      - load
+
+  # Per-container CPU/RAM/Network from cAdvisor
+  cadvisor_metrics:
+    type: prometheus_scrape
+    endpoints:
+      - "http://cadvisor:8080/metrics"
+    scrape_interval_secs: 30
+
+# -------------------------------------------------------
+# Transforms
+# -------------------------------------------------------
+transforms:
+  process_docker_logs:
+    type: remap
+    inputs:
+      - docker_logs
+    source: |
+      .log = .message
+      ._timestamp = to_unix_timestamp(now(), unit: "microseconds")
+
+  process_caddy_access:
+    type: remap
+    inputs:
+      - caddy_access
+    source: |
+      parsed, err = parse_json(.message)
+      if err == null {
+        . = parsed
+      }
+      ._timestamp = to_unix_timestamp(now(), unit: "microseconds")
+
+# -------------------------------------------------------
+# Sinks
+# -------------------------------------------------------
+sinks:
+  # Container Stdout/Stderr Logs → OpenObserve (docker_logs stream)
+  openobserve_docker_logs:
+    type: http
+    inputs:
+      - process_docker_logs
+    uri: "http://openobserve:5080/api/default/docker_logs/_json"
+    method: post
+    auth:
+      strategy: basic
+      user: "${OPENOBSERVE_ROOT_USER_EMAIL}"
+      password: "${OPENOBSERVE_ROOT_USER_PASSWORD}"
+    encoding:
+      codec: json
+    batch:
+      max_events: 50
+      timeout_secs: 1
+
+  # Caddy Web Traffic Access Logs → OpenObserve (caddy_access stream)
+  openobserve_caddy_access:
+    type: http
+    inputs:
+      - process_caddy_access
+    uri: "http://openobserve:5080/api/default/caddy_access/_json"
+    method: post
+    auth:
+      strategy: basic
+      user: "${OPENOBSERVE_ROOT_USER_EMAIL}"
+      password: "${OPENOBSERVE_ROOT_USER_PASSWORD}"
+    encoding:
+      codec: json
+    batch:
+      max_events: 50
+      timeout_secs: 1
+
+  # Metrics → OpenObserve (Prometheus Remote Write)
+  openobserve_metrics:
+    type: prometheus_remote_write
+    inputs:
+      - host_metrics
+      - cadvisor_metrics
+    endpoint: "http://openobserve:5080/api/default/prometheus/api/v1/write"
+    auth:
+      strategy: basic
+      user: "${OPENOBSERVE_ROOT_USER_EMAIL}"
+      password: "${OPENOBSERVE_ROOT_USER_PASSWORD}"

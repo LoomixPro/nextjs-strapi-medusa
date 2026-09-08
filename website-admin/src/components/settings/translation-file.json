@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_settings_translation_files",
+  "info": {
+    "displayName": "Translation File",
+    "icon": "globe",
+    "description": "A single translation file for a specific language"
+  },
+  "options": {},
+  "attributes": {
+    "language": {
+      "type": "string",
+      "required": true
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "files"
+      ]
+    }
+  }
+}

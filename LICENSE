@@ -1,0 +1,16 @@
+# Commercial Software License
+
+Copyright (c) 2026 Loomix.pro. All rights reserved.
+
+This software and associated documentation files are proprietary and confidential. 
+Purchase of this product grants the licensee a non-exclusive, non-transferable license 
+to deploy and use this software for their own business projects. 
+
+Redistribution, reselling, sublicensing, or public publishing of the source code 
+is strictly prohibited without prior written permission.
+
+### Third-Party Software Notices
+This project incorporates open-source components, including:
+- Medusa v2 (MIT License, Copyright 2022-2026 Medusa)
+- Next.js (MIT License, Copyright Vercel, Inc.)
+- Strapi CMS (Community Edition)

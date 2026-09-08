@@ -1,0 +1,103 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_posts",
+  "info": {
+    "singularName": "blog-post",
+    "pluralName": "blog-posts",
+    "displayName": "Blog Post",
+    "description": "Editorial articles, style guides, and fashion stories with dynamic content blocks."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "description": "Post title and main article headline.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "description": "URL slug generated from title for routing (e.g. 'art-of-modern-minimalist-styling').",
+      "targetField": "title",
+      "required": true,
+      "unique": true
+    },
+    "excerpt": {
+      "type": "text",
+      "description": "Short summary or teaser displayed on blog index cards and social previews.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "featured": {
+      "type": "boolean",
+      "description": "Pin this article to the featured section at the top of the blog page.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": false
+    },
+    "coverImage": {
+      "type": "media",
+      "description": "Primary high-resolution cover image for article headers and card thumbnails.",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::blog-author.blog-author",
+      "description": "Article author profile and bio."
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::blog-category.blog-category",
+      "description": "Primary blog topic category."
+    },
+    "readTime": {
+      "type": "string",
+      "description": "Estimated reading duration (e.g. '5 min read').",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "blocks": {
+      "type": "dynamiczone",
+      "description": "Rich content layout components: headings, text, photos, video embeds, and promo banners.",
+      "components": [
+        "blog.heading",
+        "blog.text",
+        "blog.image",
+        "blog.image-text-split",
+        "blog.video",
+        "blog.ad"
+      ],
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    }
+  }
+}

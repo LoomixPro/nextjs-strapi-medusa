@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_faq_faq_heroes",
+  "info": {
+    "displayName": "FAQ Hero",
+    "icon": "landscape",
+    "description": "Hero section of the FAQ page"
+  },
+  "options": {},
+  "attributes": {
+    "badge": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "searchPlaceholder": {
+      "type": "string"
+    }
+  }
+}

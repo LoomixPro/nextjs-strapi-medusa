@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_ui_blog_posts_blocks",
+  "info": {
+    "displayName": "Blog Posts Block",
+    "icon": "bulletList",
+    "description": "A block to display blog posts on the page based on latest, views, or manual selection."
+  },
+  "options": {},
+  "attributes": {
+    "adminTitle": {
+      "type": "string",
+      "description": "Auto-filled section name for display in the blocks list"
+    },
+    "blog_section": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::hp-section-blog.hp-section-blog"
+    }
+  }
+}

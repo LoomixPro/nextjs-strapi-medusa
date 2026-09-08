@@ -1,0 +1,473 @@
+services:
+  # ==========================================
+  # Infrastructure Services
+  # ==========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: postgres -c max_connections=${POSTGRES_MAX_CONNECTIONS:-200}
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - app_network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.5
+    container_name: meilisearch
+    restart: unless-stopped
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+      - MEILI_NO_ANALYTICS=${MEILISEARCH_NO_ANALYTICS}
+      - MEILI_ENV=${MEILISEARCH_ENV}
+    ports:
+      - "127.0.0.1:7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+    networks:
+      - app_network
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sf http://localhost:7700/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    restart: always
+    ports:
+      - "9001:9000"
+      - "9002:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - app_network
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  minio-setup:
+    image: minio/mc
+    container_name: minio-setup
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - app_network
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+    entrypoint: >
+      /bin/sh -c "
+        until /usr/bin/mc alias set myminio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}; do
+          echo 'Waiting for MinIO...';
+          sleep 2;
+        done;
+        /usr/bin/mc mb myminio/$${MINIO_BUCKET} || true;
+        /usr/bin/mc anonymous set public myminio/$${MINIO_BUCKET};
+        exit 0;
+      "
+
+  # ==========================================
+  # Application Services
+  # ==========================================
+  medusa:
+    image: ghcr.io/${GITHUB_DEPLOY_REPO:-your-username/your-repo}-medusa:latest
+    container_name: medusa
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+    environment:
+      # Medusa Database
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/medusa
+      # Medusa Redis
+      - REDIS_URL=redis://redis:6379
+      # Mail
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM_ADDRESS=${SMTP_FROM_ADDRESS}
+      - SMTP_SECURE=${SMTP_SECURE}
+      # Meilisearch
+      - MEILISEARCH_HOST=http://meilisearch:7700
+      - MEILISEARCH_API_KEY=${MEILI_MASTER_KEY}
+      - MEILISEARCH_PRODUCT_INDEX_NAME=products
+      # Strapi — Internal Docker Address
+      - STRAPI_API_URL=http://strapi:1337/api
+      - STRAPI_API_TOKEN=${STRAPI_API_TOKEN_FOR_MEDUSA}
+      # Node Env
+      - NODE_ENV=${MEDUSA_NODE_ENV}
+      - MEDUSA_ALLOW_HTTP_COOKIES=${MEDUSA_ALLOW_HTTP_COOKIES:-false}
+      # Medusa Configs
+      - MEDUSA_BACKEND_URL=${MEDUSA_BACKEND_PUBLIC_URL}
+      - STOREFRONT_PUBLIC_URL=${STOREFRONT_PUBLIC_URL}
+      - MEDUSA_BACKEND_PUBLIC_URL=${MEDUSA_BACKEND_PUBLIC_URL}
+      - STRAPI_PUBLIC_URL=${STRAPI_PUBLIC_URL}
+      - STORE_CORS=${STORE_CORS:-${STOREFRONT_PUBLIC_URL}}
+      - ADMIN_CORS=${ADMIN_CORS:-${MEDUSA_BACKEND_PUBLIC_URL},${STRAPI_PUBLIC_URL}}
+      - AUTH_CORS=${AUTH_CORS:-${STOREFRONT_PUBLIC_URL},${MEDUSA_BACKEND_PUBLIC_URL}}
+      - JWT_SECRET=${MEDUSA_JWT_SECRET}
+      - COOKIE_SECRET=${MEDUSA_COOKIE_SECRET}
+      - REVALIDATE_SECRET=${REVALIDATE_SECRET}
+      # Auth (Required for startup)
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      # S3 Storage (MinIO)
+      - S3_URL=${MINIO_PUBLIC_URL}
+      - S3_BUCKET=${MINIO_BUCKET}
+      - S3_REGION=${MINIO_REGION}
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - S3_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+      # Admin Credentials
+      - MEDUSA_ADMIN_EMAIL=${MEDUSA_ADMIN_EMAIL}
+      - MEDUSA_ADMIN_PASSWORD=${MEDUSA_ADMIN_PASSWORD}
+      # SMS Configuration
+      - SMS_PROVIDER=${SMS_PROVIDER}
+      - SMS_API_KEY=${SMS_API_KEY}
+      - SMS_OTP_TEMPLATE_ID=${SMS_OTP_TEMPLATE_ID}
+      # Payment Providers (STRIPE_API_KEY alias for medusa-config / store-admin/.env.template)
+      - STRIPE_KEY=${STRIPE_KEY}
+      - STRIPE_API_KEY=${STRIPE_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - MEDUSA_PAYMENTS_PUBLISHABLE_KEY=${MEDUSA_PAYMENTS_PUBLISHABLE_KEY}
+      - MEDUSA_PAYMENTS_ACCOUNT_ID=${MEDUSA_PAYMENTS_ACCOUNT_ID}
+      - SMS_ORDER_PLACED_TEMPLATE_ID=${SMS_ORDER_PLACED_TEMPLATE_ID}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_FROM_NUMBER=${TWILIO_FROM_NUMBER}
+      # Security & Internal API
+      - INTERNAL_API_SECRET=${INTERNAL_API_SECRET}
+      - AUTH_MFA_ENCRYPTION_KEY=${AUTH_MFA_ENCRYPTION_KEY}
+      - DEFAULT_REGION=${DEFAULT_REGION}
+      - DEFAULT_LOCALE=${DEFAULT_LOCALE}
+      - ENABLE_IRAN_FEATURES=${ENABLE_IRAN_FEATURES:-false}
+      - MEDUSA_ADMIN_ENABLE_IRAN_FEATURES=${ENABLE_IRAN_FEATURES:-false}
+      - STOREFRONT_URL=${STOREFRONT_URL:-http://storefront:8000}
+      - MEDUSA_ADMIN_ONBOARDING_TYPE=${MEDUSA_ADMIN_ONBOARDING_TYPE}
+    # command is now defined in store-admin/Dockerfile CMD
+    healthcheck:
+      test: [ "CMD", "node", "-e", "fetch('http://127.0.0.1:9000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    ports:
+      - "9000:9000"
+    volumes:
+      - medusa_uploads:/app/store-admin/uploads
+    networks:
+      - app_network
+
+  strapi:
+    image: ghcr.io/${GITHUB_DEPLOY_REPO:-your-username/your-repo}-strapi:latest
+    container_name: strapi
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - HOST=${STRAPI_HOST}
+      - PORT=${STRAPI_PORT}
+      - APP_KEYS=${STRAPI_APP_KEYS}
+      - API_TOKEN_SALT=${STRAPI_API_TOKEN_SALT}
+      - ADMIN_JWT_SECRET=${STRAPI_ADMIN_JWT_SECRET}
+      - TRANSFER_TOKEN_SALT=${STRAPI_TRANSFER_TOKEN_SALT}
+      - JWT_SECRET=${STRAPI_JWT_SECRET}
+      # Database
+      - DATABASE_CLIENT=${STRAPI_DATABASE_CLIENT}
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=strapi
+      - DATABASE_USERNAME=${POSTGRES_USER}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_SSL=${STRAPI_DATABASE_SSL}
+      - NODE_ENV=${STRAPI_NODE_ENV}
+      # S3 Storage (MinIO)
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_ACCESS_SECRET=${MINIO_ROOT_PASSWORD}
+      - AWS_REGION=${MINIO_REGION}
+      - AWS_BUCKET=${MINIO_BUCKET}
+      - AWS_ENDPOINT=${S3_ENDPOINT:-http://minio:9000}
+      - AWS_BASE_URL=${MINIO_PUBLIC_URL}
+      # Extra website integration variables
+      - ENCRYPTION_KEY=${STRAPI_ENCRYPTION_KEY}
+      - NEXT_PUBLIC_BASE_URL=${STOREFRONT_PUBLIC_URL}
+      - NEXT_PUBLIC_ENABLE_IRAN_FEATURES=${ENABLE_IRAN_FEATURES}
+      - REVALIDATE_SECRET=${REVALIDATE_SECRET}
+      - REGISTRY_URL=${REGISTRY_URL}
+      - GITHUB_PAT=${GITHUB_PAT}
+      - GITHUB_DEPLOY_TOKEN=${GITHUB_DEPLOY_TOKEN}
+      - GITHUB_DEPLOY_REPO=${GITHUB_DEPLOY_REPO}
+      - STOREFRONT_URL=${STOREFRONT_URL:-http://storefront:8000}
+      - STOREFRONT_INTERNAL_URL=http://storefront:8000
+      - INTERNAL_API_SECRET=${INTERNAL_API_SECRET}
+      - STRAPI_TELEMETRY_DISABLED=true
+      - STRAPI_DISABLE_UPDATE_NOTIFICATION=true
+    ports:
+      - "1337:1337"
+    volumes:
+      - strapi_uploads:/opt/app/public/uploads
+    networks:
+      - app_network
+    healthcheck:
+      test: [ "CMD", "node", "-e", "fetch('http://127.0.0.1:1337/_health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  storefront:
+    image: ghcr.io/${GITHUB_DEPLOY_REPO:-your-username/your-repo}-storefront:latest
+    container_name: storefront
+    restart: unless-stopped
+    depends_on:
+      medusa:
+        condition: service_healthy
+      strapi:
+        condition: service_healthy
+    environment:
+      - NEXT_PUBLIC_MEDUSA_BACKEND_URL=${MEDUSA_BACKEND_PUBLIC_URL}
+      - MEDUSA_BACKEND_URL=${MEDUSA_BACKEND_URL:-http://medusa:9000}
+      - NEXT_PUBLIC_BASE_URL=${STOREFRONT_PUBLIC_URL}
+      - NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${MEDUSA_PUBLISHABLE_KEY}
+      - REVALIDATE_SECRET=${REVALIDATE_SECRET}
+      - NEXT_PUBLIC_MEILISEARCH_HOST=${MEILISEARCH_PUBLIC_URL}
+      - MEILISEARCH_HOST=http://meilisearch:7700
+      - MEILISEARCH_API_KEY=${MEILI_MASTER_KEY}
+      - NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY=${MEILI_SEARCH_KEY}
+      - REDIS_URL=redis://redis:6379
+      - STRAPI_URL=http://strapi:1337
+      - NEXT_PUBLIC_STRAPI_URL=${STRAPI_PUBLIC_URL}
+      - STRAPI_API_TOKEN=${STRAPI_API_TOKEN_FOR_FRONT}
+      # Extra runtime environment variables
+      - NEXT_PUBLIC_DEFAULT_REGION=${DEFAULT_REGION}
+      - DEFAULT_LOCALE=${DEFAULT_LOCALE}
+      - NEXT_PUBLIC_ENABLE_IRAN_FEATURES=${ENABLE_IRAN_FEATURES}
+      - NEXT_PUBLIC_MEILISEARCH_INDEX_NAME=${MEILISEARCH_INDEX_NAME}
+      - NEXT_PUBLIC_GTM_ID=${GTM_ID}
+      - NEXT_PUBLIC_UMAMI_URL=${UMAMI_PUBLIC_URL:-${UMAMI_URL}}
+      - UMAMI_URL=http://umami:3000
+      - NEXT_PUBLIC_UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID}
+      - UMAMI_USERNAME=${UMAMI_USERNAME}
+      - UMAMI_PASSWORD=${UMAMI_PASSWORD}
+      - SENDPULSE_API_ID=${SENDPULSE_API_ID}
+      - SENDPULSE_API_SECRET=${SENDPULSE_API_SECRET}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM_ADDRESS=${SMTP_FROM_ADDRESS}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
+      - CONTACT_FORM_RECIPIENT=${CONTACT_FORM_RECIPIENT}
+      - INTERNAL_API_SECRET=${INTERNAL_API_SECRET}
+      - REGISTRY_URL=${REGISTRY_URL}
+      - GITHUB_PAT=${GITHUB_PAT}
+      - MEDUSA_CLOUD_S3_HOSTNAME=${MEDUSA_CLOUD_S3_HOSTNAME}
+      - MEDUSA_CLOUD_S3_PATHNAME=${MEDUSA_CLOUD_S3_PATHNAME}
+      # Trust Caddy internal CA for image optimization against local TLS (see caddy_data volume)
+      - NODE_EXTRA_CA_CERTS=${CADDY_ROOT_CA_PATH:-/caddy-data/pki/authorities/local/root.crt}
+    volumes:
+      - caddy_data:/caddy-data:ro
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DOMAIN=${DOMAIN:-}
+      - ACME_EMAIL=${ACME_EMAIL:-admin@example.com}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    networks:
+      - app_network
+
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: umami
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET}
+    ports:
+      - "3005:3000"
+    networks:
+      - app_network
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3000/api/heartbeat || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+      - TUNNEL_TRANSPORT_PROTOCOL=http2
+    networks:
+      - app_network
+
+  # ==========================================
+  # Observability & Monitoring (OpenObserve)
+  # ==========================================
+  openobserve:
+    image: o2cr.ai/openobserve/openobserve-enterprise:latest
+    container_name: openobserve
+    restart: unless-stopped
+    environment:
+      - ZO_DATA_DIR=/data
+      - ZO_ROOT_USER_EMAIL=${OPENOBSERVE_ROOT_USER_EMAIL:-admin@example.com}
+      - ZO_ROOT_USER_PASSWORD=${OPENOBSERVE_ROOT_USER_PASSWORD:-AdminPass#12345}
+    volumes:
+      - openobserve_data:/data
+    ports:
+      - "127.0.0.1:5080:5080"
+    networks:
+      - app_network
+
+  vector:
+    image: timberio/vector:0.38.0-alpine
+    container_name: vector
+    user: "root"
+    restart: unless-stopped
+    depends_on:
+      openobserve:
+        condition: service_started
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./vector.yaml:/etc/vector/vector.yaml:ro
+      - caddy_logs:/var/log/caddy:ro
+    environment:
+      - OPENOBSERVE_ROOT_USER_EMAIL=${OPENOBSERVE_ROOT_USER_EMAIL:-admin@example.com}
+      - OPENOBSERVE_ROOT_USER_PASSWORD=${OPENOBSERVE_ROOT_USER_PASSWORD:-AdminPass#12345}
+    networks:
+      - app_network
+
+  cadvisor:
+    image: zcube/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - app_network
+
+  # Collects docker stats per container and sends to OpenObserve docker_stats stream
+  docker-stats-exporter:
+    image: docker:cli
+    container_name: docker-stats-exporter
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - OO_EMAIL=${OPENOBSERVE_ROOT_USER_EMAIL:-admin@example.com}
+      - OO_PASS=${OPENOBSERVE_ROOT_USER_PASSWORD:-AdminPass#12345}
+    entrypoint: sh
+    command:
+      - -c
+      - |
+        apk add --no-cache curl -q 2>/dev/null
+        while true; do
+          ts=$$(date -u +%s)000000
+          docker stats --no-stream --format '{{json .}}' | while IFS= read -r line; do
+            payload=$$(echo "$$line" | sed "s/}$$/, \"_timestamp\": $$ts}/")
+            curl -s -X POST \
+              -u "$$OO_EMAIL:$$OO_PASS" \
+              -H "Content-Type: application/json" \
+              -d "[$$payload]" \
+              http://openobserve:5080/api/default/docker_stats/_json > /dev/null
+          done
+          sleep 30
+        done
+    depends_on:
+      openobserve:
+        condition: service_started
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+  meilisearch_data:
+  strapi_uploads:
+  medusa_uploads:
+  minio_data:
+  caddy_data:
+  caddy_config:
+  caddy_logs:
+  openobserve_data:
+
+networks:
+  app_network:
+    driver: bridge

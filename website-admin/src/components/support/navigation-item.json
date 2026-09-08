@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_support_navigation_items",
+  "info": {
+    "displayName": "Navigation Item",
+    "icon": "bulletList"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "target_section": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

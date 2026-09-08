@@ -1,0 +1,55 @@
+{
+  "collectionName": "components_privacy_privacy_grid_sections",
+  "info": {
+    "displayName": "Privacy Grid Section",
+    "icon": "dashboard",
+    "description": "Grid of info cards with header and custom styled footer"
+  },
+  "options": {},
+  "attributes": {
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "Shield",
+        "Lock",
+        "Eye",
+        "UserCheck",
+        "Mail",
+        "Cookie",
+        "Globe",
+        "FileText"
+      ],
+      "default": "FileText",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "section_id": {
+      "type": "string",
+      "required": true
+    },
+    "intro_text": {
+      "type": "text",
+      "required": true
+    },
+    "footer_text": {
+      "type": "text"
+    },
+    "layout_style": {
+      "type": "enumeration",
+      "enum": [
+        "default",
+        "alert",
+        "muted"
+      ],
+      "default": "default"
+    },
+    "cards": {
+      "type": "component",
+      "repeatable": true,
+      "component": "privacy.privacy-grid-card"
+    }
+  }
+}

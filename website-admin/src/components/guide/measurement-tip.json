@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_guide_measurement_tips",
+  "info": {
+    "displayName": "Measurement Tip",
+    "icon": "lightbulb"
+  },
+  "options": {},
+  "attributes": {
+    "tip": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

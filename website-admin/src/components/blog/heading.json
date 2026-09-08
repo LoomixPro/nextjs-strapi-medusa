@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_blog_headings",
+  "info": {
+    "displayName": "Heading",
+    "icon": "heading",
+    "description": "Section header for blog posts"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

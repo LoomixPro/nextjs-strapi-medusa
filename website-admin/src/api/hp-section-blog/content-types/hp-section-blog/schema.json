@@ -1,0 +1,113 @@
+{
+  "kind": "collectionType",
+  "collectionName": "hp_section_blogs",
+  "info": {
+    "singularName": "hp-section-blog",
+    "pluralName": "hp-section-blogs",
+    "displayName": "Section (Blog)",
+    "description": "A section displaying featured or latest blog posts on the storefront homepage."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "adminDisplayTitle": {
+      "type": "string",
+      "description": "Internal name to identify this blog section in Strapi admin lists."
+    },
+    "title": {
+      "type": "string",
+      "description": "Main title heading of the blog section (e.g. 'From Our Journal' or 'Latest Editorial').",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "badge": {
+      "type": "string",
+      "description": "Top badge or label displayed above the section title (e.g. 'BLOG & NEWS').",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "Short subtitle or introductory text below the blog section title.",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "style": {
+      "type": "string",
+      "description": "Layout style identifier for the blog cards grid (e.g. style-1, style-2).",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": "style-1"
+    },
+    "headerStyle": {
+      "type": "string",
+      "description": "Header title and badge typography style (e.g. style-1, style-2).",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": "style-1"
+    },
+    "source": {
+      "type": "enumeration",
+      "description": "How blog posts are populated: 'latest' (most recently published), 'views' (most read), or 'manual' (pick specific posts).",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "required": true,
+      "default": "latest",
+      "enum": [
+        "manual",
+        "latest",
+        "views"
+      ]
+    },
+    "postCount": {
+      "type": "integer",
+      "description": "Number of blog posts to display when source is 'latest' or 'views' (default: 3).",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "default": 3
+    },
+    "posts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::blog-post.blog-post",
+      "description": "Manually chosen blog posts (only used when source is set to 'manual').",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "source"
+            },
+            "manual"
+          ]
+        }
+      }
+    }
+  }
+}

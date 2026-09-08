@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_ui_product_showcase_blocks",
+  "info": {
+    "displayName": "Product Showcase Block",
+    "icon": "apps",
+    "description": "A block to display a Product Showcase on the page"
+  },
+  "options": {},
+  "attributes": {
+    "adminTitle": {
+      "type": "string",
+      "description": "Auto-filled section name for display in the blocks list"
+    },
+    "showcase": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::hp-section-showcase.hp-section-showcase"
+    }
+  }
+}

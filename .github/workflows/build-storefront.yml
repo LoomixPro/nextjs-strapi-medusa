@@ -1,0 +1,75 @@
+name: Build and Push Storefront Image
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-storefront
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set lowercase repository name
+        id: lower_repo
+        run: |
+          echo "IMAGE_NAME_LOWER=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.lower_repo.outputs.IMAGE_NAME_LOWER }}
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./store
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ secrets.STOREFRONT_BUILD_ARGS }}
+
+  deploy-to-server:
+    needs: build-and-push
+    runs-on: self-hosted
+    environment: production
+    steps:
+      - name: Pull Latest Storefront Image and Restart
+        run: |
+          set -euo pipefail
+          
+          # Load server-level .env if it exists
+          if [ -f ~/.env ]; then source ~/.env || true; fi
+          
+          # Navigate to the explicit DEPLOY_PATH
+          TARGET_DIR="${{ secrets.DEPLOY_PATH }}"
+          cd "${TARGET_DIR:-$DEPLOY_PATH}"
+          
+          echo "Pulling the latest storefront image..."
+          docker compose pull storefront
+          echo "Restarting storefront container..."
+          docker compose up -d storefront
+          docker image prune -f

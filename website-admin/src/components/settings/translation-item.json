@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_settings_translation_items",
+  "info": {
+    "displayName": "Translation Item",
+    "icon": "bulletList",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "language": {
+      "type": "enumeration",
+      "enum": [
+        "default",
+        "en-US"
+      ]
+    },
+    "value": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

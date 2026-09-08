@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_showcase_all_items",
+  "info": {
+    "displayName": "All Items Source",
+    "icon": "bulletList",
+    "description": "Display items from all products"
+  },
+  "options": {},
+  "attributes": {
+    "filterBy": {
+      "type": "enumeration",
+      "enum": [
+        "most_visited",
+        "discounted"
+      ],
+      "required": false
+    }
+  }
+}

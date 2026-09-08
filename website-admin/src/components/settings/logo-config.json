@@ -1,0 +1,52 @@
+{
+  "collectionName": "components_settings_logo_configs",
+  "info": {
+    "displayName": "Logo Config",
+    "icon": "picture",
+    "description": "Logo configuration supporting both image and text"
+  },
+  "options": {},
+  "attributes": {
+    "type": {
+      "type": "enumeration",
+      "required": true,
+      "default": "image",
+      "enum": [
+        "image",
+        "text"
+      ]
+    },
+    "image": {
+      "type": "media",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "type"
+            },
+            "image"
+          ]
+        }
+      },
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "text": {
+      "type": "string",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "type"
+            },
+            "text"
+          ]
+        }
+      },
+      "required": false
+    }
+  }
+}

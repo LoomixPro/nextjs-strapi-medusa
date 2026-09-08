@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_guide_measurement_steps",
+  "info": {
+    "displayName": "Measurement Step",
+    "icon": "bulletList"
+  },
+  "options": {},
+  "attributes": {
+    "step_number": {
+      "type": "integer",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

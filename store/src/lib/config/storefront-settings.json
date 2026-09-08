@@ -1,0 +1,61 @@
+{
+  "siteName": "Loomix",
+  "siteDescription": "Discover timeless collections and premium fashion essentials with Loomix Commerce.",
+  "productCard": {
+    "storeCardType": "card-1",
+    "collectionCardType": "card-1",
+    "categoryCardType": "card-1"
+  },
+  "header": {
+    "headerStyle": "style-1"
+  },
+  "productPage": {
+    "template": "style-1"
+  },
+  "checkoutPage": {
+    "template": "style-1"
+  },
+  "storePage": {
+    "template": "style-1",
+    "title": "All Products",
+    "description": "Explore our complete collection of premium fashion essentials."
+  },
+  "orderPage": {
+    "template": "style-1"
+  },
+  "cartPage": {
+    "template": "style-1"
+  },
+  "loginPage": {
+    "template": "style-1",
+    "loginMethods": "email"
+  },
+  "profilePage": {
+    "template": "style-1"
+  },
+  "bottomNavBar": {
+    "style": "style-3"
+  },
+  "footer": {
+    "footerStyle": "style-1",
+    "translations": []
+  },
+  "background": {
+    "style": "grid",
+    "opacityLight": 40,
+    "opacityDark": 30
+  },
+  "button": {
+    "style": "style-1"
+  },
+  "theme": {
+    "lightPalette": "default",
+    "darkPalette": "default"
+  },
+  "isRtl": false,
+  "convertToToman": false,
+  "returnDeadlineDays": 14,
+  "allowIndexing": true,
+  "timeZone": "UTC",
+  "translations": []
+}

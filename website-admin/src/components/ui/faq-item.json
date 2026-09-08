@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_ui_faq_items",
+  "info": {
+    "displayName": "FAQ Item",
+    "icon": "question",
+    "description": "A single Question & Answer item for the FAQ list"
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "string",
+      "required": true
+    },
+    "answer": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

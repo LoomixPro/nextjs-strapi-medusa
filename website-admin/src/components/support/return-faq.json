@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_support_return_faqs",
+  "info": {
+    "displayName": "Return FAQ Section",
+    "icon": "question",
+    "description": "Accordion list of FAQs specifically for returns and refunds"
+  },
+  "options": {},
+  "attributes": {
+    "faq_title": {
+      "type": "string",
+      "required": true
+    },
+    "faq_items": {
+      "type": "component",
+      "repeatable": true,
+      "component": "ui.faq-item"
+    }
+  }
+}

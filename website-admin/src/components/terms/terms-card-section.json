@@ -1,0 +1,41 @@
+{
+  "collectionName": "components_terms_terms_card_sections",
+  "info": {
+    "displayName": "Terms Card Section",
+    "icon": "file",
+    "description": "Section containing cards for terms page"
+  },
+  "options": {},
+  "attributes": {
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "FileText",
+        "ShoppingBag",
+        "CreditCard",
+        "Package",
+        "RefreshCw",
+        "Shield",
+        "Scale",
+        "AlertCircle",
+        "CheckCircle",
+        "Mail"
+      ],
+      "default": "FileText",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "section_id": {
+      "type": "string",
+      "required": true
+    },
+    "cards": {
+      "type": "component",
+      "repeatable": true,
+      "component": "terms.terms-card"
+    }
+  }
+}
