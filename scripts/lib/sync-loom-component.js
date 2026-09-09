@@ -55,7 +55,8 @@ async function syncRemoteDirectory(apiUrl, targetDir, branch, headers) {
       if (!fileRes.ok) {
         throw new Error(`Failed to download ${item.path}: ${fileRes.status}`)
       }
-      fs.writeFileSync(itemTargetPath, await fileRes.text(), "utf-8")
+      const arrayBuffer = await fileRes.arrayBuffer()
+      fs.writeFileSync(itemTargetPath, Buffer.from(arrayBuffer))
     } else if (item.type === "dir") {
       await syncRemoteDirectory(item.url, itemTargetPath, branch, headers)
     }

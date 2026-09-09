@@ -665,7 +665,7 @@ const StorefrontPage = () => {
                               Preview image not available for {style}
                             </Typography>
                             <Typography variant="sigma" textColor="neutral400">
-                              (Will appear when preview.png is added to this style folder)
+                              (Will appear when preview.webp is added to this style folder)
                             </Typography>
                           </Flex>
                         ) : (

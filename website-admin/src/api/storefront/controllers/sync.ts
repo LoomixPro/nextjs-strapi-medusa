@@ -502,7 +502,7 @@ export default {
         .trim()
         .replace(/\/$/, "")
 
-      const targetUrl = `${registryUrl}/${componentPath}/styles/${styleName}/preview.png`
+      const targetUrl = `${registryUrl}/${componentPath}/styles/${styleName}/preview.webp`
       return ctx.redirect(targetUrl)
     } catch (err: any) {
       console.error("[Strapi Style Preview Exception]:", err)
