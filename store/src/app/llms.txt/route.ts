@@ -3,8 +3,6 @@ import { getStorefrontSettings } from "@lib/data/strapi-settings"
 import { listCategories } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
 
-export const dynamic = "force-dynamic"
-
 export async function GET() {
   const rawBaseUrl = getBaseURL()
   const baseUrl = rawBaseUrl.replace(/\/+$/, "")

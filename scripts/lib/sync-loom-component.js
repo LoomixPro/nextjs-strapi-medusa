@@ -22,7 +22,12 @@ function assertSafeComponentPath(componentPath) {
 }
 
 async function syncRemoteDirectory(apiUrl, targetDir, branch, headers) {
-  const response = await fetch(`${apiUrl}?ref=${branch}`, { headers })
+  const targetUrl = new URL(apiUrl)
+  if (branch && !targetUrl.searchParams.has("ref")) {
+    targetUrl.searchParams.set("ref", branch)
+  }
+
+  const response = await fetch(targetUrl.toString(), { headers })
   if (!response.ok) {
     throw new Error(`GitHub API error fetching directory: ${response.status}`)
   }
@@ -309,7 +314,11 @@ async function syncLoomComponent(action, componentPath, options = {}) {
   const projectRoot = options.projectRoot || resolveProjectRoot()
   loadEnvFallback(projectRoot)
 
-  const registryBase = (options.registryBase || process.env.REGISTRY_URL || "").trim()
+  const registryBase = (
+    options.registryBase ||
+    process.env.REGISTRY_URL ||
+    "https://raw.githubusercontent.com/Loomix-pro/Loomix-registry/main/src/modules"
+  ).trim()
   const githubPat = options.githubPat || process.env.GITHUB_PAT || ""
   const registryToken = options.registryToken || process.env.LOOM_REGISTRY_TOKEN || process.env.REGISTRY_TOKEN || ""
   const targetBasePath =
