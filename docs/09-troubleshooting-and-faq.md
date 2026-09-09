@@ -104,18 +104,57 @@ Strapi automatically synchronizes database schemas on server startup.
 
 ---
 
-## 🛑 7. Meilisearch / Search Not Working in Production
+## 🛑 7. Meilisearch / Search Modal Frozen or Not Working in Production
 
-### Symptom:
-Search modal empty or store filters return no products.
+### Symptoms:
+1. **Search input frozen / Cannot type into search field:** Clicking the search icon opens the modal, but typing on the keyboard does nothing and the field stays empty.
+2. **Search modal empty or store filters return no products.**
+3. **CORS policy error on `/multi-search`:** Console displays `Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present`.
+
+### Cause:
+The storefront uses `@meilisearch/instant-meilisearch` and queries Meilisearch directly from the visitor's browser (client-side) at `NEXT_PUBLIC_MEILISEARCH_HOST` (e.g. `https://search.yourdomain.com`). If the `search` DNS record is missing in Cloudflare or CORS preflight headers are missing in Caddy, InstantSearch's controlled input state freezes and suppresses typing.
 
 ### Solution:
-1. Confirm `MEILI_SEARCH_KEY` is set and **≠** `MEILI_MASTER_KEY`.
-2. Do **not** expose Meilisearch via Cloudflare Tunnel or a public Caddy hostname.
-3. Rebuild storefront after setting search keys:
-   ```bash
-   docker compose up -d --build storefront
+1. **Add `search` DNS Record in Cloudflare:**
+   - In Cloudflare Dashboard > **DNS > Records**, add an `A` record:
+     - Name: `search`
+     - IPv4: `<Your VPS IP>`
+     - Proxy status: **DNS Only** (Gray Cloud) for initial Caddy Let's Encrypt SSL issuance, or Proxied (Orange Cloud) with SSL mode set to **Full (Strict)**.
+2. **Ensure CORS Headers are Enabled in `Caddyfile`:**
+   ```caddy
+   search.{$DOMAIN} {
+       encode zstd gzip
+       import security_headers
+       import access_log
+
+       @cors_preflight method OPTIONS
+       handle @cors_preflight {
+           header Access-Control-Allow-Origin "*"
+           header Access-Control-Allow-Methods "GET, POST, OPTIONS"
+           header Access-Control-Allow-Headers "*"
+           header Access-Control-Max-Age "86400"
+           respond "" 204
+       }
+
+       header {
+           Access-Control-Allow-Origin "*"
+           Access-Control-Allow-Methods "GET, POST, OPTIONS"
+           Access-Control-Allow-Headers "*"
+           defer
+       }
+
+       reverse_proxy meilisearch:7700
+   }
    ```
+   Reload Caddy: `docker compose restart caddy`
+3. **Verify public Meilisearch connectivity:**
+   ```bash
+   curl -I https://search.yourdomain.com/health
+   # Must return HTTP 200 OK
+   ```
+4. **Verify Search Keys & Rebuild Storefront:**
+   - In `.env` / build secrets, ensure `NEXT_PUBLIC_MEILISEARCH_HOST=https://search.yourdomain.com` and `NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY` are provided.
+   - Rebuild if variables changed: `docker compose up -d --build storefront`
 
 ---
 
