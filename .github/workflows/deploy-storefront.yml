@@ -42,7 +42,7 @@ jobs:
     environment: production
     env:
       REGISTRY_URL: ${{ secrets.REGISTRY_URL || 'https://raw.githubusercontent.com/Loomix-pro/Loomix-registry/main/src/modules' }}
-      GITHUB_PAT: ${{ secrets.LOOM_REGISTRY_PAT || secrets.GITHUB_PAT }}
+      GITHUB_PAT: ${{ secrets.LOOM_REGISTRY_PAT }}
     outputs:
       auto_deploy: ${{ steps.payload.outputs.auto_deploy }}
 
