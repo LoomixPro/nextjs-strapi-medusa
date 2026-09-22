@@ -128,10 +128,19 @@ export const useProductActions = ({
     const currentVId = searchParams.get("v_id")
     if (currentVId === selectedVariant.id) return
 
+    // If current URL points to a valid variant that options haven't synced to yet, do not overwrite!
+    if (currentVId && product.variants?.some((v) => v.id === currentVId)) {
+      const urlVariant = product.variants.find((v) => v.id === currentVId)
+      const urlOptions = optionsAsKeymap(urlVariant?.options)
+      if (!isEqual(urlOptions, options)) {
+        return
+      }
+    }
+
     const params = new URLSearchParams(searchParams.toString())
     params.set("v_id", selectedVariant.id)
     router.replace(`?${params.toString()}`, { scroll: false })
-  }, [selectedVariant?.id, router, searchParams])
+  }, [selectedVariant?.id, router, searchParams, product.variants, options])
 
   // Check if the currently selected combination of options corresponds to an existing variant
   const isValidVariant = useMemo(() => {
