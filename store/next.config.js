@@ -64,9 +64,10 @@ const nextConfig = withBundleAnalyzer(
   withPWA(
     withNextIntl({
       reactStrictMode: true,
-      // Standalone output: Next.js traces only the files needed to run the server.
-      // Required for the optimized Docker multi-stage build (node server.js).
-      output: process.env.NEXT_OUTPUT_MODE || "standalone",
+      // Standalone output is only for Docker self-hosting; Vercel handles serverless tracing natively.
+      output: process.env.VERCEL
+        ? undefined
+        : process.env.NEXT_OUTPUT_MODE || "standalone",
 
       typescript: {
         ignoreBuildErrors: false,
