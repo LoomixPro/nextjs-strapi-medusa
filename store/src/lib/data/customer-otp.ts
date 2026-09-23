@@ -1,6 +1,6 @@
 "use server"
 
-import { sdk } from "@lib/config"
+import { sdk, MEDUSA_BACKEND_URL } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
 import { getAuthHeaders, getCacheTag, setAuthToken } from "./cookies"
@@ -147,11 +147,7 @@ export async function verifyEmailLoginOtp({
     // We shouldn't create it here because the token will be stale.
     if (!customer) {
       try {
-        const adminUrl =
-          process.env.MEDUSA_BACKEND_URL ||
-          process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
-          "http://localhost:9000"
-        await fetch(`${adminUrl}/store/auth-identity/cleanup`, {
+        await fetch(`${MEDUSA_BACKEND_URL}/store/auth-identity/cleanup`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -352,11 +348,7 @@ export const verifyOtp = async ({
         // was not cleaned up. We call the cleanup endpoint to delete the stale identity.
         authLog("verifyOtp: auto-create customer failed (attempt 1)", createErr)
         try {
-          const adminUrl =
-            process.env.MEDUSA_BACKEND_URL ||
-            process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
-            "http://localhost:9000"
-          await fetch(`${adminUrl}/store/auth-identity/cleanup`, {
+          await fetch(`${MEDUSA_BACKEND_URL}/store/auth-identity/cleanup`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

@@ -9,7 +9,7 @@ import { Button } from "@modules/common/components/shadcn/button"
 import { toast } from "sonner"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
-import { isEqual } from "lodash"
+import isEqual from "lodash/isEqual"
 import {
   useParams,
   usePathname,

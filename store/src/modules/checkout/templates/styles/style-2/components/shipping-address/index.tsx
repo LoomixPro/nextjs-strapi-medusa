@@ -3,7 +3,7 @@
 import { HttpTypes } from "@medusajs/types"
 import { Container } from "@medusajs/ui"
 import { Check } from "@medusajs/icons"
-import { mapKeys } from "lodash"
+import mapKeys from "lodash/mapKeys"
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslations } from "next-intl"
 import AddressSelect from "../address-select"

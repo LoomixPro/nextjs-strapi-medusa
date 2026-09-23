@@ -1,7 +1,7 @@
 import Medusa, { FetchArgs, FetchInput } from "@medusajs/js-sdk"
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch"
 // Defaults to standard port for Medusa server
-let MEDUSA_BACKEND_URL =
+export const MEDUSA_BACKEND_URL =
   process.env.MEDUSA_BACKEND_URL ||
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
   "http://localhost:9000"

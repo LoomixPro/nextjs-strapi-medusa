@@ -5,12 +5,12 @@ import Image from "next/image"
 import React from "react"
 import { useTranslations } from "next-intl"
 
+import { HttpTypes } from "@medusajs/types"
 import PlaceholderImage from "@modules/common/icons/placeholder-image"
 
 interface ThumbnailProps {
   thumbnail?: string | null
-  // TODO: Fix image typings
-  images?: { url: string }[] | null
+  images?: Array<HttpTypes.StoreProductImage | { url: string }> | null
   size?: "small" | "medium" | "large" | "full" | "square"
   isFeatured?: boolean
   className?: string

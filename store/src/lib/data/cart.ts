@@ -319,7 +319,10 @@ export async function submitPromotionForm(
   }
 }
 
-// TODO: Pass a POJO instead of a form entity here
+/**
+ * Server Action for checkout address form submission.
+ * Accepts FormData from useActionState and maps input fields into Medusa cart shipping and billing addresses.
+ */
 export async function setAddresses(currentState: unknown, formData: FormData) {
   try {
     if (!formData) {

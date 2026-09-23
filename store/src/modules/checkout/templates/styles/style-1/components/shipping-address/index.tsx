@@ -3,7 +3,7 @@
 import { HttpTypes } from "@medusajs/types"
 import Checkbox from "@modules/common/components/checkbox"
 import Input from "@modules/common/components/input"
-import { mapKeys } from "lodash"
+import mapKeys from "lodash/mapKeys"
 import { useTranslations } from "next-intl"
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import AddressSelect from "../address-select"

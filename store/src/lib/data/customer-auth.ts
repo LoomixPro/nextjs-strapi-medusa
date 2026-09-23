@@ -1,6 +1,6 @@
 "use server"
 
-import { sdk } from "@lib/config"
+import { sdk, MEDUSA_BACKEND_URL } from "@lib/config"
 import { jwtDecode } from "jwt-decode"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
@@ -240,8 +240,7 @@ export async function requestPasswordReset(
 
   try {
     const internalSecret = process.env.INTERNAL_API_SECRET
-    const backendUrl = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
-    await fetch(`${backendUrl}/custom/ensure-emailpass`, {
+    await fetch(`${MEDUSA_BACKEND_URL}/custom/ensure-emailpass`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

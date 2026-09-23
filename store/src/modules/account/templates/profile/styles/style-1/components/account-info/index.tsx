@@ -18,6 +18,7 @@ type AccountInfoProps = {
   errorMessage?: string
   clearState: () => void
   children?: React.ReactNode
+  isEditable?: boolean
   "data-testid"?: string
 }
 
@@ -29,6 +30,7 @@ const AccountInfo = ({
   clearState,
   errorMessage,
   children,
+  isEditable = true,
   "data-testid": dataTestid,
 }: AccountInfoProps) => {
   const t = useTranslations("Account.Profile")
@@ -53,32 +55,34 @@ const AccountInfo = ({
         <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] block">
           {label}
         </label>
-        <button
-          className={clx(
-            "flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider transition-all duration-300",
-            {
-              "text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300":
-                state,
-              "text-primary hover:text-primary/80 md:opacity-0 md:group-hover:opacity-100":
-                !state,
-            }
-          )}
-          onClick={handleToggle}
-          type={state ? "reset" : "button"}
-          data-testid="edit-button"
-        >
-          {state ? (
-            <>
-              <X size={12} className="stroke-[2.5]" />
-              {t("cancel")}
-            </>
-          ) : (
-            <>
-              <Edit2 size={12} className="stroke-[2.5]" />
-              {t("edit")}
-            </>
-          )}
-        </button>
+        {isEditable && (
+          <button
+            className={clx(
+              "flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider transition-all duration-300",
+              {
+                "text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300":
+                  state,
+                "text-primary hover:text-primary/80 md:opacity-0 md:group-hover:opacity-100":
+                  !state,
+              }
+            )}
+            onClick={handleToggle}
+            type={state ? "reset" : "button"}
+            data-testid="edit-button"
+          >
+            {state ? (
+              <>
+                <X size={12} className="stroke-[2.5]" />
+                {t("cancel")}
+              </>
+            ) : (
+              <>
+                <Edit2 size={12} className="stroke-[2.5]" />
+                {t("edit")}
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       <div
