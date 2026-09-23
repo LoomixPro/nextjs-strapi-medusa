@@ -57,7 +57,7 @@ const ProductTemplateStyle2: React.FC<ProductTemplateProps> = async ({
         <div className="flex flex-col md:flex-row gap-12">
           {/* Gallery (Left) */}
           <div className="w-full md:w-1/2">
-            <ImageGalleryStyle2 images={images} />
+            <ImageGalleryStyle2 images={images} product={product} />
           </div>
 
           {/* Details (Right) */}

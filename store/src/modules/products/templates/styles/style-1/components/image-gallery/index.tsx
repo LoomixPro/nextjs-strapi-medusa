@@ -14,10 +14,14 @@ import {
 import { cn } from "@lib/utils"
 import { useImageZoom } from "@lib/hooks/use-image-zoom"
 import { HttpTypes } from "@medusajs/types"
+import { useSearchParams } from "next/navigation"
+import { useMemo } from "react"
+import { resolveVariantImages } from "@lib/util/product"
 
 interface ImageGalleryV2Props {
   images:
     HttpTypes.StoreProductImage[] | HttpTypes.StoreProductVariant["images"]
+  product?: HttpTypes.StoreProduct
 }
 
 const Controls = ({
@@ -140,16 +144,50 @@ function ZoomableImage({
   )
 }
 
-function ImageGalleryV2({ images = [] }: ImageGalleryV2Props) {
-  const [prevImages, setPrevImages] = useState(images)
+function ImageGalleryV2({ images = [], product }: ImageGalleryV2Props) {
+  const searchParams = useSearchParams()
+  const [activeVariantId, setActiveVariantId] = useState<string | null>(() =>
+    searchParams.get("v_id")
+  )
+
+  useEffect(() => {
+    const urlVId = searchParams.get("v_id")
+    if (urlVId) {
+      setActiveVariantId(urlVId)
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    const handleVariantChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ variantId: string }>
+      if (customEvent.detail?.variantId) {
+        setActiveVariantId(customEvent.detail.variantId)
+      }
+    }
+
+    window.addEventListener("product:variant-change", handleVariantChange)
+    return () => {
+      window.removeEventListener("product:variant-change", handleVariantChange)
+    }
+  }, [])
+
+  const galleryImages = useMemo(() => {
+    return resolveVariantImages(
+      product,
+      activeVariantId,
+      images as HttpTypes.StoreProductImage[]
+    )
+  }, [product, activeVariantId, images])
+
+  const [prevImages, setPrevImages] = useState(galleryImages)
   const [activeTab, setActiveTab] = useState(0)
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
   const t = useTranslations("Product.gallery")
 
   // Synchronous reset when images set changes to prevent double-render flicker
-  if (images !== prevImages) {
-    setPrevImages(images)
+  if (galleryImages !== prevImages) {
+    setPrevImages(galleryImages)
     setActiveTab(0)
     setCurrent(0)
     api?.scrollTo(0)
@@ -162,7 +200,7 @@ function ImageGalleryV2({ images = [] }: ImageGalleryV2Props) {
     })
   }, [api])
 
-  if (!images?.length) {
+  if (!galleryImages?.length) {
     return (
       <div className="flex items-center justify-center aspect-[29/34] w-full bg-ui-bg-subtle rounded-rounded">
         <p className="text-ui-fg-muted">{t("no_images")}</p>
@@ -176,7 +214,7 @@ function ImageGalleryV2({ images = [] }: ImageGalleryV2Props) {
       <div className="hidden md:flex gap-4">
         {/* Thumbnails */}
         <div className="flex flex-col h-[600px] w-20 gap-2 overflow-y-auto scrollbar-hide flex-shrink-0">
-          {images.map((image, index) => (
+          {galleryImages.map((image, index) => (
             <button
               key={image.id || index}
               onClick={() => setActiveTab(index)}
@@ -203,7 +241,7 @@ function ImageGalleryV2({ images = [] }: ImageGalleryV2Props) {
         {/* Main Image */}
         <div className="flex-1 aspect-[3/4] relative bg-ui-bg-subtle rounded-rounded overflow-hidden shadow-sm border border-ui-border-base">
           <ZoomableImage
-            url={images[activeTab]?.url || ""}
+            url={galleryImages[activeTab]?.url || ""}
             alt={t("product_image_alt", { index: activeTab + 1 })}
             index={activeTab}
             priority
@@ -220,7 +258,7 @@ function ImageGalleryV2({ images = [] }: ImageGalleryV2Props) {
           className="w-full"
         >
           <CarouselContent>
-            {images.map((image, index) => (
+            {galleryImages.map((image, index) => (
               <CarouselItem key={image.id || index}>
                 <div className="aspect-[4/5] relative bg-ui-bg-subtle overflow-hidden">
                   <ZoomableImage
@@ -238,7 +276,7 @@ function ImageGalleryV2({ images = [] }: ImageGalleryV2Props) {
 
         {/* Indicators */}
         <div className="flex justify-center gap-1.5 mt-4 pb-2">
-          {images.map((_, index) => (
+          {galleryImages.map((_, index) => (
             <button
               key={index}
               onClick={() => api?.scrollTo(index)}

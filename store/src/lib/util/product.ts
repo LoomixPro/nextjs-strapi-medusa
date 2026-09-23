@@ -65,3 +65,37 @@ export const getNonColorOptions = (
     return acc
   }, [] as ProductOptionGroup[])
 }
+
+/**
+ * Resolves the images to display for a selected variant or falls back to product images.
+ */
+export function resolveVariantImages(
+  product?: HttpTypes.StoreProduct,
+  variantId?: string | null,
+  fallbackImages?: HttpTypes.StoreProductImage[]
+): HttpTypes.StoreProductImage[] {
+  if (!product?.variants?.length) {
+    return fallbackImages && fallbackImages.length > 0
+      ? fallbackImages
+      : product?.images || []
+  }
+
+  const targetVariant = variantId
+    ? product.variants.find((v) => v.id === variantId)
+    : product.variants[0]
+
+  if (targetVariant?.images && targetVariant.images.length > 0) {
+    const imageIdsMap = new Map(targetVariant.images.map((i) => [i.id, true]))
+    const filtered = (product.images || fallbackImages)?.filter((i) =>
+      imageIdsMap.has(i.id)
+    )
+    if (filtered && filtered.length > 0) {
+      return filtered
+    }
+    return targetVariant.images as HttpTypes.StoreProductImage[]
+  }
+
+  return fallbackImages && fallbackImages.length > 0
+    ? fallbackImages
+    : product.images || []
+}

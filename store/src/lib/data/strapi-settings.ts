@@ -185,7 +185,7 @@ async function _fetchStorefrontSettings(
   status: "draft" | "published"
 ): Promise<StorefrontSettings> {
   const response = await fetchWithRetry(
-    `${STRAPI_URL}/api/storefront-settings?status=${status}&populate[modules][populate]=*&populate[translations][populate]=*&populate[favicon]=*`,
+    `${STRAPI_URL}/api/storefront-settings?status=${status}&populate[modules][populate]=*&populate[translations][populate]=*&populate[favicon]=true`,
     {
       headers: {
         ...(STRAPI_API_TOKEN && {

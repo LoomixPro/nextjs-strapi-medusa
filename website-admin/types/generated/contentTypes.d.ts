@@ -1807,6 +1807,7 @@ export interface ApiStorefrontSettingStorefrontSetting
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    favicon: Schema.Attribute.Media<'images'>;
     isRtl: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1835,6 +1836,8 @@ export interface ApiStorefrontSettingStorefrontSetting
     publishedAt: Schema.Attribute.DateTime;
     returnDeadlineDays: Schema.Attribute.Integer &
       Schema.Attribute.DefaultTo<7>;
+    siteDescription: Schema.Attribute.Text;
+    siteName: Schema.Attribute.String;
     timeZone: Schema.Attribute.String & Schema.Attribute.DefaultTo<'UTC'>;
     translations: Schema.Attribute.Component<'settings.translation-file', true>;
     updatedAt: Schema.Attribute.DateTime;

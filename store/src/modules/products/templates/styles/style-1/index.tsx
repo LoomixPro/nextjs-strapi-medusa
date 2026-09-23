@@ -113,7 +113,7 @@ const ProductTemplateV2: React.FC<ProductTemplateProps> = async ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-16">
           {/* Main Gallery Column */}
           <div className="md:col-span-7">
-            <ImageGalleryV2 images={images} />
+            <ImageGalleryV2 images={images} product={product} />
           </div>
 
           {/* Product Actions Column */}

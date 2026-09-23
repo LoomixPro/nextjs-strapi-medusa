@@ -121,9 +121,17 @@ export const useProductActions = ({
     }
   }
 
-  // Update URL when selectedVariant changes (skip if already in sync)
+  // Update URL and notify listeners when selectedVariant changes
   useEffect(() => {
     if (!selectedVariant?.id) return
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("product:variant-change", {
+          detail: { variantId: selectedVariant.id },
+        })
+      )
+    }
 
     const currentVId = searchParams.get("v_id")
     if (currentVId === selectedVariant.id) return

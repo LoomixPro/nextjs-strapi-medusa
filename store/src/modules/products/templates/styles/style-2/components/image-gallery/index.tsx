@@ -1,26 +1,62 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
 import { cn } from "@lib/utils"
 import { useTranslations } from "next-intl"
+import { useSearchParams } from "next/navigation"
+import { resolveVariantImages } from "@lib/util/product"
 
 interface ImageGalleryProps {
   images: HttpTypes.StoreProductImage[]
+  product?: HttpTypes.StoreProduct
 }
 
-export default function ImageGalleryStyle2({ images }: ImageGalleryProps) {
+export default function ImageGalleryStyle2({
+  images,
+  product,
+}: ImageGalleryProps) {
   const t = useTranslations("Product.gallery")
-  const [mainImage, setMainImage] = useState(images[0]?.url)
+  const searchParams = useSearchParams()
+  const [activeVariantId, setActiveVariantId] = useState<string | null>(() =>
+    searchParams.get("v_id")
+  )
 
   useEffect(() => {
-    if (images.length > 0) {
-      setMainImage(images[0].url)
+    const urlVId = searchParams.get("v_id")
+    if (urlVId) {
+      setActiveVariantId(urlVId)
     }
-  }, [images])
+  }, [searchParams])
 
-  if (!images.length) return null
+  useEffect(() => {
+    const handleVariantChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ variantId: string }>
+      if (customEvent.detail?.variantId) {
+        setActiveVariantId(customEvent.detail.variantId)
+      }
+    }
+
+    window.addEventListener("product:variant-change", handleVariantChange)
+    return () => {
+      window.removeEventListener("product:variant-change", handleVariantChange)
+    }
+  }, [])
+
+  const galleryImages = useMemo(() => {
+    return resolveVariantImages(product, activeVariantId, images)
+  }, [product, activeVariantId, images])
+
+  const [mainImage, setMainImage] = useState(galleryImages[0]?.url)
+
+  useEffect(() => {
+    if (galleryImages.length > 0) {
+      setMainImage(galleryImages[0].url)
+    }
+  }, [galleryImages])
+
+  if (!galleryImages.length) return null
 
   return (
     <div className="sticky top-8">
@@ -37,7 +73,7 @@ export default function ImageGalleryStyle2({ images }: ImageGalleryProps) {
         )}
       </div>
       <div className="grid grid-cols-6 gap-2">
-        {images.map((img, index) => (
+        {galleryImages.map((img, index) => (
           <button
             key={img.id}
             onClick={() => setMainImage(img.url)}
