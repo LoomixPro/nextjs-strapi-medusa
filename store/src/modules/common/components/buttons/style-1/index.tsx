@@ -17,56 +17,43 @@ const AnimatedButton = React.forwardRef<HTMLButtonElement, AnimatedButtonProps>(
         ref={ref}
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.96 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
         className={cn(
-          "relative overflow-hidden bg-primary border-2 border-primary rounded-full px-12 py-3 font-black text-sm uppercase tracking-wider select-none cursor-pointer z-0",
+          "relative group overflow-hidden rounded-full px-8 py-3 font-bold text-sm uppercase tracking-wider select-none cursor-pointer inline-flex items-center justify-center gap-2",
+          "bg-primary text-primary-foreground shadow-lg shadow-primary/25",
+          "border border-primary/30",
           className
         )}
         {...props}
       >
-        {/* Before overlay */}
+        {/* Animated ambient glow behind button */}
         <motion.div
-          initial={{ y: 0 }}
-          animate={{ y: isHovered ? "100%" : 0 }}
-          transition={{ duration: 0.2, ease: "easeInOut" }}
-          className="absolute w-full h-[104%] left-[-60%] top-[-104%] bg-primary-foreground pointer-events-none"
-          style={{ skewX: 30 }}
+          className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-primary via-cyan-500 to-blue-500 opacity-0 blur-md transition duration-500 group-hover:opacity-75 -z-10 pointer-events-none"
+          animate={isHovered ? { opacity: 0.7 } : { opacity: 0 }}
         />
 
-        {/* After overlay */}
+        {/* Shimmer light beam sweep on hover */}
         <motion.div
-          initial={{ y: 0 }}
-          animate={{ y: isHovered ? "-102%" : 0 }}
-          transition={{ duration: 0.2, ease: "easeInOut" }}
-          className="absolute w-full h-[104%] left-[30%] top-[102%] bg-primary-foreground pointer-events-none z-[-1]"
-          style={{ skewX: 30 }}
+          initial={{ x: "-150%", skewX: -25 }}
+          animate={{ x: isHovered ? "200%" : "-150%", skewX: -25 }}
+          transition={{ duration: 0.75, ease: "easeInOut" }}
+          className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none z-10"
         />
 
-        {/* Text Container */}
-        <span className="block overflow-hidden relative pointer-events-none w-full">
-          <motion.span
-            initial={{ color: "hsl(var(--primary-foreground))" }}
-            animate={{
-              y: isHovered ? [0, 24, -24, 0] : 0,
-              color: isHovered
-                ? "hsl(var(--primary))"
-                : "hsl(var(--primary-foreground))",
-            }}
-            transition={{
-              y: isHovered
-                ? { duration: 0.3, times: [0, 0.5, 0.51, 1], ease: "easeInOut" }
-                : { duration: 0 },
-              color: { duration: 0.2, ease: "easeInOut" },
-            }}
-            className="flex items-center justify-center gap-2 relative w-full"
-          >
-            {children}
-          </motion.span>
+        {/* Subtle radial center highlight on hover */}
+        <motion.div className="absolute inset-0 bg-radial-gradient from-white/15 via-transparent to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Button Content */}
+        <span className="relative z-10 flex items-center justify-center gap-2 transition-transform duration-200 group-hover:tracking-widest">
+          {children}
         </span>
       </motion.button>
     )
   }
 )
 
-AnimatedButton.displayName = "AnimatedButton"
+AnimatedButton.displayName = "AnimatedButtonStyle1"
 
 export default AnimatedButton
