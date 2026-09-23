@@ -62,3 +62,7 @@ public/sw.js
 public/workbox-*.js
 public/fallback-*.js
 public/swe-worker-*.js
+
+# Next.js agent rules
+AGENTS.md
+CLAUDE.md
