@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-import { animate, stagger } from "animejs"
+import { animate, stagger } from "framer-motion"
 import { ArrowDown, ChevronLeft, ChevronRight } from "lucide-react"
 import ProductHero from "./product-hero"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -121,13 +121,11 @@ export default function Style1({
           if (!finalCollectionRef.current) return
           animeTriggered.current = true
 
-          animate(finalCollectionRef.current.querySelectorAll(".anime-card"), {
-            translateY: [-200, 0],
-            opacity: [0, 1],
-            delay: stagger(150),
-            duration: 1000,
-            easing: "easeOutElastic(1, .6)",
-          })
+          animate(
+            finalCollectionRef.current.querySelectorAll(".anime-card"),
+            { y: [-80, 0], opacity: [0, 1] },
+            { delay: stagger(0.12), duration: 0.8, ease: "easeOut" }
+          )
         }
       },
       { threshold: 0.2 }

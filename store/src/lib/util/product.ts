@@ -67,35 +67,100 @@ export const getNonColorOptions = (
 }
 
 /**
- * Resolves the images to display for a selected variant or falls back to product images.
+ * Resolves the appropriate images to display in the product gallery.
+ * Supports both signatures:
+ * 1. resolveVariantImages(product, variantId, fallbackImages)
+ * 2. resolveVariantImages(productImages, variants, activeVariantId)
  */
 export function resolveVariantImages(
   product?: HttpTypes.StoreProduct,
   variantId?: string | null,
   fallbackImages?: HttpTypes.StoreProductImage[]
+): HttpTypes.StoreProductImage[]
+export function resolveVariantImages(
+  productImages: HttpTypes.StoreProductImage[],
+  variants: HttpTypes.StoreProductVariant[],
+  activeVariantId?: string | null
+): HttpTypes.StoreProductImage[]
+export function resolveVariantImages(
+  firstArg?: HttpTypes.StoreProduct | HttpTypes.StoreProductImage[],
+  secondArg?: string | null | HttpTypes.StoreProductVariant[],
+  thirdArg?: HttpTypes.StoreProductImage[] | string | null
 ): HttpTypes.StoreProductImage[] {
-  if (!product?.variants?.length) {
-    return fallbackImages && fallbackImages.length > 0
-      ? fallbackImages
-      : product?.images || []
+  let productImages: HttpTypes.StoreProductImage[] = []
+  let variants: HttpTypes.StoreProductVariant[] = []
+  let activeVariantId: string | null = null
+
+  if (Array.isArray(firstArg)) {
+    // Signature 2: (productImages, variants, activeVariantId)
+    productImages = firstArg || []
+    variants = Array.isArray(secondArg) ? secondArg : []
+    activeVariantId = typeof thirdArg === "string" ? thirdArg : null
+  } else {
+    // Signature 1: (product, variantId, fallbackImages)
+    const product = firstArg
+    activeVariantId = typeof secondArg === "string" ? secondArg : null
+    const fallbackImages = Array.isArray(thirdArg) ? thirdArg : []
+
+    variants = product?.variants || []
+    productImages =
+      fallbackImages.length > 0 ? fallbackImages : product?.images || []
   }
 
-  const targetVariant = variantId
-    ? product.variants.find((v) => v.id === variantId)
-    : product.variants[0]
+  if (!activeVariantId && variants.length > 0) {
+    activeVariantId = variants[0]?.id
+  }
 
-  if (targetVariant?.images && targetVariant.images.length > 0) {
-    const imageIdsMap = new Map(targetVariant.images.map((i) => [i.id, true]))
-    const filtered = (product.images || fallbackImages)?.filter((i) =>
-      imageIdsMap.has(i.id)
-    )
-    if (filtered && filtered.length > 0) {
+  const activeVariant = variants.find((v) => v.id === activeVariantId)
+
+  // 1. If variant explicitly specifies images, use them
+  if (activeVariant?.images && activeVariant.images.length > 0) {
+    const imageIdsMap = new Map(activeVariant.images.map((i) => [i.id, true]))
+    const filtered = productImages.filter((i) => imageIdsMap.has(i.id))
+    if (filtered.length > 0) {
       return filtered
     }
-    return targetVariant.images as HttpTypes.StoreProductImage[]
+    return activeVariant.images as HttpTypes.StoreProductImage[]
   }
 
-  return fallbackImages && fallbackImages.length > 0
-    ? fallbackImages
-    : product.images || []
+  // 2. If variant has options (e.g. Color, Finish, Accents, Grind Size), check matching images
+  if (activeVariant) {
+    const primaryOption =
+      activeVariant.options?.find(
+        (o: any) =>
+          o.option?.title?.toLowerCase().includes("color") ||
+          o.option?.title?.toLowerCase().includes("colour") ||
+          o.option?.title?.toLowerCase().includes("finish") ||
+          o.option?.title?.toLowerCase().includes("accent") ||
+          o.option?.title?.toLowerCase().includes("grind") ||
+          o.title?.toLowerCase().includes("color") ||
+          o.title?.toLowerCase().includes("finish")
+      ) || activeVariant.options?.[0]
+
+    const optValue = primaryOption?.value?.toLowerCase()
+
+    if (optValue) {
+      const matchedImages = productImages.filter((img) => {
+        const metadataColor = (img.metadata?.color as string)?.toLowerCase()
+        const urlMatch = img.url
+          ?.toLowerCase()
+          .includes(optValue.replace(/\s+/g, "-"))
+        return metadataColor === optValue || urlMatch
+      })
+      if (matchedImages.length > 0) {
+        return matchedImages
+      }
+    }
+  }
+
+  // 3. Fallback to product images or first variant's images
+  if (productImages.length > 0) {
+    return productImages
+  }
+
+  if (variants[0]?.images && variants[0].images.length > 0) {
+    return variants[0].images as HttpTypes.StoreProductImage[]
+  }
+
+  return []
 }

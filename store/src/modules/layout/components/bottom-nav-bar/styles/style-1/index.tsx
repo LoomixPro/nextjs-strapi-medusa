@@ -1,12 +1,9 @@
 "use client"
 
-import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { Home, Store, ShoppingCart, User } from "lucide-react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { cn } from "@lib/utils"
-import { useTranslations } from "next-intl"
-
+import { useBottomNav } from "../../hooks/use-bottom-nav"
 import { BottomNavBarProps } from "../../index"
 
 export function BottomNavBar({
@@ -14,18 +11,11 @@ export function BottomNavBar({
   stickyBottom = true,
   cart,
 }: BottomNavBarProps) {
-  const pathname = usePathname()
-  const t = useTranslations("Layout.nav")
+  const { shouldHide, totalItems, navItems, isItemActive } = useBottomNav(cart)
 
-  const totalItems =
-    cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0
-
-  const navItems = [
-    { id: "home", label: t("home"), icon: Home, href: "/" },
-    { id: "store", label: t("store"), icon: Store, href: "/store" },
-    { id: "cart", label: t("cart"), icon: ShoppingCart, href: "/cart" },
-    { id: "account", label: t("account"), icon: User, href: "/account" },
-  ]
+  if (shouldHide) {
+    return null
+  }
 
   return (
     <motion.nav
@@ -44,10 +34,7 @@ export function BottomNavBar({
         const Icon = item.icon
 
         // Simple logic to check active route
-        const isActive =
-          item.href === "/"
-            ? pathname === "/" || /^\/[a-zA-Z]{2}$/.test(pathname)
-            : pathname.includes(item.href.split("?")[0])
+        const isActive = isItemActive(item.href)
 
         const buttonContent = (
           <motion.button

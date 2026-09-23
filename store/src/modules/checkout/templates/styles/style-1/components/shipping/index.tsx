@@ -8,12 +8,13 @@ import { CheckCircleSolid, Loader } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { clx, Heading, Text } from "@medusajs/ui"
 import { Button } from "@modules/common/components/shadcn/button"
-import ErrorMessage from "@/modules/checkout/templates/styles/style-1/components/error-message"
+import ErrorMessage from "@modules/checkout/components/error-message"
 import Divider from "@modules/common/components/divider"
 import MedusaRadio from "@modules/common/components/radio"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { useEffect, useState } from "react"
+import { formatAddress } from "@modules/checkout/hooks/use-checkout-shipping"
 
 const PICKUP_OPTION_ON = "__PICKUP_ON"
 const PICKUP_OPTION_OFF = "__PICKUP_OFF"
@@ -32,32 +33,6 @@ type ShippingOption = HttpTypes.StoreCartShippingOption & {
 type ShippingProps = {
   cart: HttpTypes.StoreCart
   availableShippingMethods: ShippingOption[] | null
-}
-
-function formatAddress(address: HttpTypes.StoreCartAddress | undefined | null) {
-  if (!address) {
-    return ""
-  }
-
-  let ret = ""
-
-  if (address.address_1) {
-    ret += ` ${address.address_1}`
-  }
-
-  if (address.address_2) {
-    ret += `, ${address.address_2}`
-  }
-
-  if (address.postal_code) {
-    ret += `, ${address.postal_code} ${address.city}`
-  }
-
-  if (address.country_code) {
-    ret += `, ${address.country_code.toUpperCase()}`
-  }
-
-  return ret
 }
 
 const Shipping: React.FC<ShippingProps> = ({

@@ -2,16 +2,16 @@
 
 import { RadioGroup } from "@headlessui/react"
 import { setShippingMethod } from "@lib/data/cart"
-import { calculatePriceForShippingOption } from "@lib/data/fulfillment"
 import { convertToLocale } from "@lib/util/storefront-settings"
 import { Loader } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { clx } from "@medusajs/ui"
-import ErrorMessage from "@/modules/checkout/templates/styles/style-1/components/error-message"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import ErrorMessage from "@modules/checkout/components/error-message"
+import { useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { getNextIncompleteStep } from "../components/checkout-step"
+import { useCheckoutShipping } from "@modules/checkout/hooks/use-checkout-shipping"
 
 type ShippingProps = {
   cart: HttpTypes.StoreCart
@@ -23,78 +23,38 @@ const Shipping: React.FC<ShippingProps> = ({
   availableShippingMethods,
 }) => {
   const t = useTranslations("Checkout")
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingPrices, setIsLoadingPrices] = useState(true)
-  const [calculatedPricesMap, setCalculatedPricesMap] = useState<
-    Record<string, number>
-  >({})
-  const [error, setError] = useState<string | null>(null)
-  const [shippingMethodId, setShippingMethodId] = useState<string | null>(
-    cart.shipping_methods?.at(-1)?.shipping_option_id || null
-  )
-
   const searchParams = useSearchParams()
-  const router = useRouter()
-  const pathname = usePathname()
 
   const currentStep =
     searchParams.get("step") || (cart ? getNextIncompleteStep(cart) : null)
   const isOpen = currentStep === "delivery"
 
-  const shippingMethods = availableShippingMethods || []
-
-  useEffect(() => {
-    setIsLoadingPrices(true)
-
-    if (shippingMethods?.length) {
-      const promises = shippingMethods
-        .filter((sm) => sm.price_type === "calculated")
-        .map((sm) => calculatePriceForShippingOption(sm.id, cart.id))
-
-      if (promises.length) {
-        Promise.allSettled(promises).then((res) => {
-          const pricesMap: Record<string, number> = {}
-          res
-            .filter((r) => r.status === "fulfilled")
-            .forEach(
-              (p) =>
-                (pricesMap[(p as PromiseFulfilledResult<any>).value?.id || ""] =
-                  (p as PromiseFulfilledResult<any>).value?.amount!)
-            )
-
-          setCalculatedPricesMap(pricesMap)
-          setIsLoadingPrices(false)
-        })
-      } else {
-        setIsLoadingPrices(false)
-      }
-    } else {
-      setIsLoadingPrices(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availableShippingMethods, cart.id])
-
-  const handleSubmit = () => {
-    router.push(pathname + "?step=payment", { scroll: false })
-  }
+  const {
+    isLoading,
+    isLoadingPrices,
+    calculatedPricesMap,
+    error,
+    setError,
+    shippingMethodId,
+    setShippingMethodId,
+    shippingMethods,
+    handleSubmit,
+  } = useCheckoutShipping(cart, availableShippingMethods)
 
   const handleSetShippingMethod = async (id: string) => {
     setError(null)
     let currentId: string | null = null
-    setIsLoading(true)
     setShippingMethodId((prev) => {
       currentId = prev
       return id
     })
 
-    await setShippingMethod({ cartId: cart.id, shippingMethodId: id })
-      .catch((err) => {
+    await setShippingMethod({ cartId: cart.id, shippingMethodId: id }).catch(
+      (err) => {
         setShippingMethodId(currentId)
         setError(err.message)
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
+      }
+    )
   }
 
   useEffect(() => {

@@ -8,11 +8,20 @@ import { isEqual } from "lodash"
 import { sendGTMEvent } from "@next/third-parties/google"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { useRouter, useSearchParams, useParams } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
-
+import { useEffect, useMemo, useState, useRef, useCallback } from "react"
 import { useTranslations } from "next-intl"
-
 import { isColorTitle, buildColorCodeMap } from "@lib/util/product-colors"
+
+// Helper to map variant options array to a key-value object (option_id -> value)
+const optionsAsKeymap = (variantOptions: any) => {
+  return variantOptions?.reduce((acc: Record<string, string>, varopt: any) => {
+    const key = varopt.option_id || varopt.option?.id
+    if (key) {
+      acc[key] = varopt.value
+    }
+    return acc
+  }, {})
+}
 
 /**
  * Custom hook to manage product interactions such as variant selection,
@@ -30,28 +39,33 @@ export const useProductActions = ({
   disabled?: boolean
 }) => {
   const t = useTranslations("Product.actions")
-  const [options, setOptions] = useState<Record<string, string | undefined>>({})
-  const [isAdding, setIsAdding] = useState(false)
-  const [quantity, setQuantity] = useState(1)
-
   const router = useRouter()
   const refreshCart = useCartRefresh()
   const searchParams = useSearchParams()
   const countryCode = useParams().countryCode as string
 
-  // Helper to map variant options array to a key-value object (option_id -> value)
-  const optionsAsKeymap = (variantOptions: any) => {
-    return variantOptions?.reduce(
-      (acc: Record<string, string>, varopt: any) => {
-        const key = varopt.option_id || varopt.option?.id
-        if (key) {
-          acc[key] = varopt.value
-        }
-        return acc
-      },
-      {}
-    )
-  }
+  // Synchronously initialize options from URL query param `v_id` or first variant
+  const [options, setOptions] = useState<Record<string, string | undefined>>(
+    () => {
+      const vId = searchParams.get("v_id")
+      if (vId && product.variants?.length) {
+        const matched = product.variants.find((v) => v.id === vId)
+        if (matched) return optionsAsKeymap(matched.options) || {}
+      }
+      if (product.variants?.length) {
+        return optionsAsKeymap(product.variants[0].options) ?? {}
+      }
+      return {}
+    }
+  )
+
+  const [isAdding, setIsAdding] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+
+  // Track the most recent user-selected variant ID to prevent stale URL query params
+  // from resetting state during Next.js router.replace transitions.
+  const lastUpdatedVariantIdRef = useRef<string | null>(null)
+  const prevVIdRef = useRef<string | null>(searchParams.get("v_id"))
 
   // Build color code map from metadata using shared helper
   const colorCodeMap = useMemo(() => {
@@ -63,23 +77,25 @@ export const useProductActions = ({
     return product.options?.filter((o) => !isColorTitle(o.title)) || []
   }, [product.options])
 
-  // Sync options with URL v_id on load
+  // Sync options from URL on external navigation (e.g., browser Back / Forward buttons)
   useEffect(() => {
-    const vId = searchParams.get("v_id")
-    let nextOptions: Record<string, string | undefined> = {}
+    const currentVId = searchParams.get("v_id")
+    if (currentVId === prevVIdRef.current) return
+    prevVIdRef.current = currentVId
 
-    if (vId) {
-      const variant = product.variants?.find((v) => v.id === vId)
-      if (variant) {
-        nextOptions = optionsAsKeymap(variant.options) || {}
-      }
-    } else if (product.variants?.length) {
-      nextOptions = optionsAsKeymap(product.variants[0].options) ?? {}
-    } else {
+    // If this URL change is catching up to the user's action in this component, ignore
+    if (currentVId === lastUpdatedVariantIdRef.current) {
+      lastUpdatedVariantIdRef.current = null
       return
     }
 
-    setOptions((prev) => (isEqual(prev, nextOptions) ? prev : nextOptions))
+    if (currentVId && product.variants?.length) {
+      const variant = product.variants.find((v) => v.id === currentVId)
+      if (variant) {
+        const nextOptions = optionsAsKeymap(variant.options) || {}
+        setOptions((prev) => (isEqual(prev, nextOptions) ? prev : nextOptions))
+      }
+    }
   }, [product.variants, searchParams])
 
   // Determine the currently selected variant based on the chosen options
@@ -91,37 +107,7 @@ export const useProductActions = ({
     })
   }, [product.variants, options])
 
-  /**
-   * Handles changing the color option. It attempts to find a variant
-   * with the new color and the same previously selected size. If not found,
-   * it falls back to the first available variant with the new color.
-   */
-  const handleColorChange = (colorValue: string) => {
-    if (!colorOption) return
-
-    // 1. Try to find a variant with the same size but new color
-    const newOptions = { ...options, [colorOption.id]: colorValue }
-    let targetVariant = product.variants?.find((v) =>
-      isEqual(optionsAsKeymap(v.options), newOptions)
-    )
-
-    // 2. Fallback: If combination doesn't exist, find the first variant with that color
-    if (!targetVariant) {
-      targetVariant = product.variants?.find((v) => {
-        const vOptions = optionsAsKeymap(v.options)
-        return vOptions[colorOption.id] === colorValue
-      })
-    }
-
-    // 3. Update options state
-    if (targetVariant) {
-      setOptions(optionsAsKeymap(targetVariant.options) || {})
-    } else {
-      setOptions(newOptions)
-    }
-  }
-
-  // Update URL and notify listeners when selectedVariant changes
+  // Update URL and notify listeners immediately when selectedVariant changes
   useEffect(() => {
     if (!selectedVariant?.id) return
 
@@ -136,19 +122,62 @@ export const useProductActions = ({
     const currentVId = searchParams.get("v_id")
     if (currentVId === selectedVariant.id) return
 
-    // If current URL points to a valid variant that options haven't synced to yet, do not overwrite!
-    if (currentVId && product.variants?.some((v) => v.id === currentVId)) {
-      const urlVariant = product.variants.find((v) => v.id === currentVId)
-      const urlOptions = optionsAsKeymap(urlVariant?.options)
-      if (!isEqual(urlOptions, options)) {
-        return
-      }
-    }
+    lastUpdatedVariantIdRef.current = selectedVariant.id
+    prevVIdRef.current = selectedVariant.id
 
     const params = new URLSearchParams(searchParams.toString())
     params.set("v_id", selectedVariant.id)
     router.replace(`?${params.toString()}`, { scroll: false })
-  }, [selectedVariant?.id, router, searchParams, product.variants, options])
+  }, [selectedVariant?.id, router, searchParams])
+
+  /**
+   * Handles changing the color option. It attempts to find a variant
+   * with the new color and the same previously selected size. If not found,
+   * it falls back to the first available variant with the new color.
+   */
+  const handleColorChange = useCallback(
+    (colorValue: string) => {
+      if (!colorOption) return
+
+      // 1. Try to find a variant with the same size but new color
+      const newOptions = { ...options, [colorOption.id]: colorValue }
+      let targetVariant = product.variants?.find((v) =>
+        isEqual(optionsAsKeymap(v.options), newOptions)
+      )
+
+      // 2. Fallback: If combination doesn't exist, find the first variant with that color
+      if (!targetVariant) {
+        targetVariant = product.variants?.find((v) => {
+          const vOptions = optionsAsKeymap(v.options)
+          return vOptions[colorOption.id] === colorValue
+        })
+      }
+
+      // 3. Update options state
+      if (targetVariant) {
+        lastUpdatedVariantIdRef.current = targetVariant.id
+        setOptions(optionsAsKeymap(targetVariant.options) || {})
+      } else {
+        setOptions(newOptions)
+      }
+    },
+    [colorOption, options, product.variants]
+  )
+
+  // Listen for external color select events (e.g. from mobile gallery color swatches)
+  useEffect(() => {
+    const handleSelectColorEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ colorValue: string }>
+      if (customEvent.detail?.colorValue) {
+        handleColorChange(customEvent.detail.colorValue)
+      }
+    }
+
+    window.addEventListener("product:select-color", handleSelectColorEvent)
+    return () => {
+      window.removeEventListener("product:select-color", handleSelectColorEvent)
+    }
+  }, [handleColorChange])
 
   // Check if the currently selected combination of options corresponds to an existing variant
   const isValidVariant = useMemo(() => {

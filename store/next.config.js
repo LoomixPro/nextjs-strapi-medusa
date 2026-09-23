@@ -80,8 +80,6 @@ const nextConfig = withBundleAnalyzer(
         optimizePackageImports: [
           "lucide-react",
           "lodash",
-          "animejs",
-          "motion",
           "framer-motion",
           "@medusajs/ui",
           "@medusajs/icons",

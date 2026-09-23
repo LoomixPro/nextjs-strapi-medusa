@@ -27,10 +27,10 @@ const ProductTemplateStyle2: React.FC<ProductTemplateProps> = async ({
   return (
     <div className="min-h-screen">
       <ViewItemEvent product={product} region={region} />
-      <div className="max-w-7xl mx-auto px-4 pt-16 md:pt-20 pb-8">
+      <div className="max-w-7xl mx-auto px-4 pt-16 md:pt-20 pb-28 md:pb-8">
         {/* Breadcrumbs */}
-        <div className="flex items-center justify-between mb-8">
-          <nav className="flex text-sm text-muted-foreground items-center">
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <nav className="flex text-sm text-muted-foreground items-center truncate">
             <LocalizedClientLink
               href="/"
               className="hover:text-foreground cursor-pointer"
@@ -49,15 +49,23 @@ const ProductTemplateStyle2: React.FC<ProductTemplateProps> = async ({
                 <span className="mx-2">/</span>
               </>
             )}
-            <span className="text-foreground font-bold">{product.title}</span>
+            <span className="text-foreground font-bold truncate">
+              {product.title}
+            </span>
           </nav>
-          <BackButton />
+          <div className="hidden sm:block">
+            <BackButton />
+          </div>
         </div>
 
         <div className="flex flex-col md:flex-row gap-12">
           {/* Gallery (Left) */}
           <div className="w-full md:w-1/2">
-            <ImageGalleryStyle2 images={images} product={product} />
+            <ImageGalleryStyle2
+              images={images}
+              variants={product.variants}
+              product={product}
+            />
           </div>
 
           {/* Details (Right) */}
@@ -69,15 +77,15 @@ const ProductTemplateStyle2: React.FC<ProductTemplateProps> = async ({
               reviewCount={reviewsData.count}
             />
 
-            {/* Description Box */}
-            <ProductDescriptionStyle2 product={product} />
-
             {/* Actions: Color, Size, Qty, Add to Cart */}
-            <div className="mt-4">
+            <div className="mt-2">
               <Suspense fallback={<SkeletonProductActions />}>
                 <ProductActionsStyle2 product={product} region={region} />
               </Suspense>
             </div>
+
+            {/* Description Box */}
+            <ProductDescriptionStyle2 product={product} />
           </div>
         </div>
 

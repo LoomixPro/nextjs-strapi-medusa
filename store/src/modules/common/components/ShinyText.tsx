@@ -4,7 +4,7 @@ import {
   useMotionValue,
   useAnimationFrame,
   useTransform,
-} from "motion/react"
+} from "framer-motion"
 
 interface ShinyTextProps {
   text: string
