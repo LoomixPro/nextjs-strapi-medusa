@@ -210,7 +210,10 @@ export default function ProductActionsStyle2({
       )}
 
       {/* ── Mobile Sticky Bottom Bar (Replaces BottomNavBar with Add to Bag & Minimal Back Button) ── */}
-      <div className="fixed inset-x-0 bottom-0 z-50 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-background/85 dark:bg-neutral-950/85 backdrop-blur-2xl border-t border-border/40 shadow-[0_-10px_30px_rgba(0,0,0,0.2)] md:hidden">
+      <div
+        suppressHydrationWarning
+        className="fixed inset-x-0 bottom-0 z-50 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-background/85 dark:bg-neutral-950/85 backdrop-blur-2xl border-t border-border/40 shadow-[0_-10px_30px_rgba(0,0,0,0.2)] md:hidden"
+      >
         <div className="flex items-center gap-3 max-w-md mx-auto">
           {/* Minimal Back Button */}
           <button

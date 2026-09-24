@@ -19,6 +19,7 @@ export function BottomNavBar({
 
   return (
     <motion.nav
+      suppressHydrationWarning
       initial={{ y: 50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 260, damping: 20 }}
