@@ -73,3 +73,9 @@ website-admin/.cache/
 website-admin/.tmp/
 website-admin/public/uploads/
 website-admin/database.sqlite
+
+# Backups
+backups/
+*.sql
+*.sql.gz
+

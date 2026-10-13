@@ -63,6 +63,7 @@ nano .env
 | **Strapi Admin** | `http://<VM_IP>:1337/admin` | `https://admin.local/admin` | `https://admin.yourdomain.com/admin` |
 | **Umami Analytics**| `http://<VM_IP>:3005` | `https://analytics.local` | `https://analytics.yourdomain.com` |
 | **Meilisearch** | `127.0.0.1:7700` | `https://search.local` | `https://search.yourdomain.com` |
+| **Portainer Dashboard** | `https://<VM_IP>:9443` | `https://portainer.local` | `https://portainer.yourdomain.com` |
 
 ---
 
@@ -83,6 +84,7 @@ To prevent server CPU/memory exhaustion during heavy Next.js and Strapi builds, 
 | **7** | Meilisearch search-only key → `.env` | ✅ | ✅ |
 | **8** | Umami Analytics → `UMAMI_WEBSITE_ID` in `.env` | Umami optional | ✅ **Before Storefront build** |
 | **9** | Next.js Storefront (GitHub Actions Build & Pull) + Cloudflare Tunnel | ✅ | ✅ |
+| **10** | Portainer CE (Container Management & Monitoring) | ✅ | ✅ |
 
 ---
 
@@ -221,6 +223,26 @@ docker compose up -d storefront
 ```bash
 docker compose up -d cloudflared
 ```
+
+---
+
+### 🔹 Phase 10: Portainer CE (Container Management & Monitoring)
+
+Start the lightweight visual container management and monitoring dashboard:
+
+```bash
+docker compose up -d portainer
+```
+
+- Direct HTTPS: `https://<VM_IP>:9443`
+- Profile B: `https://portainer.local` (or `https://monitor.local`)
+- Profile C: `https://portainer.yourdomain.com` (or `https://monitor.yourdomain.com`)
+
+> [!IMPORTANT]
+> **5-Minute Initial Admin Window**: Open the Portainer web URL immediately upon starting and configure your administrator password (**minimum 12 characters**). If the security timeout expires, simply restart the container to reset the timer:
+> ```bash
+> docker restart portainer
+> ```
 
 ---
 

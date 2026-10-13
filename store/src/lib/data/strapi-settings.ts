@@ -195,8 +195,12 @@ async function _fetchStorefrontSettings(
     }
   )
 
-  // If settings don't exist yet (404), return defaults
-  if (response.status === 404) {
+  // If settings don't exist yet (404) or unauthenticated (401/403 on fresh setup), return defaults
+  if (
+    response.status === 404 ||
+    response.status === 401 ||
+    response.status === 403
+  ) {
     return await getDefaultStorefrontSettings()
   }
 

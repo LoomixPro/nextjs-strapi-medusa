@@ -23,6 +23,62 @@ services:
       retries: 5
     command: postgres -c max_connections=${POSTGRES_MAX_CONNECTIONS:-200}
 
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local:15
+    container_name: postgres-backup
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app_network
+    volumes:
+      - ./backups:/backups
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=medusa,strapi,umami
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_EXTRA_OPTS=--clean --if-exists
+      - SCHEDULE=${BACKUP_SCHEDULE:-@daily}
+      - BACKUP_ON_START=TRUE
+      - BACKUP_KEEP_DAYS=${BACKUP_KEEP_DAYS:-14}
+      - BACKUP_KEEP_WEEKS=${BACKUP_KEEP_WEEKS:-4}
+      - BACKUP_KEEP_MONTHS=${BACKUP_KEEP_MONTHS:-6}
+      - HEALTHCHECK_PORT=8080
+
+  s3-backup-sync:
+    image: rclone/rclone:latest
+    container_name: s3-backup-sync
+    restart: unless-stopped
+    depends_on:
+      - postgres-backup
+    networks:
+      - app_network
+    volumes:
+      - ./backups:/backups:ro
+    environment:
+      - RCLONE_CONFIG_S3REMOTE_TYPE=s3
+      - RCLONE_CONFIG_S3REMOTE_PROVIDER=${OFFSITE_S3_PROVIDER:-Cloudflare}
+      - RCLONE_CONFIG_S3REMOTE_ACCESS_KEY_ID=${OFFSITE_S3_ACCESS_KEY_ID:-}
+      - RCLONE_CONFIG_S3REMOTE_SECRET_ACCESS_KEY=${OFFSITE_S3_SECRET_ACCESS_KEY:-}
+      - RCLONE_CONFIG_S3REMOTE_ENDPOINT=${OFFSITE_S3_ENDPOINT:-}
+      - OFFSITE_S3_BUCKET=${OFFSITE_S3_BUCKET:-next-strapi-medusa-backups}
+      - OFFSITE_SYNC_INTERVAL=${OFFSITE_SYNC_INTERVAL:-3600}
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        if [ -z "$$RCLONE_CONFIG_S3REMOTE_ACCESS_KEY_ID" ] || [ -z "$$RCLONE_CONFIG_S3REMOTE_ENDPOINT" ]; then
+          echo "ℹ [INFO] Offsite S3 backup credentials not configured. s3-backup-sync is standing by."
+          tail -f /dev/null
+        else
+          echo "✔ [SUCCESS] Starting S3 Offsite Sync to bucket: $$OFFSITE_S3_BUCKET..."
+          while true; do
+            rclone sync /backups s3remote:$$OFFSITE_S3_BUCKET/backups --fast-list --transfers=4 || true
+            sleep $${OFFSITE_SYNC_INTERVAL:-3600}
+          done
+        fi
+
   redis:
     image: redis:alpine
     container_name: redis
@@ -108,7 +164,7 @@ services:
   # Application Services
   # ==========================================
   medusa:
-    image: ghcr.io/${GITHUB_DEPLOY_REPO:-your-username/your-repo}-medusa:latest
+    image: ghcr.io/${GITHUB_DEPLOY_REPO:-your-username/your-repo}-medusa:${MEDUSA_IMAGE_TAG:-latest}
     container_name: medusa
     restart: always
     depends_on:
@@ -203,7 +259,7 @@ services:
       - app_network
 
   strapi:
-    image: ghcr.io/${GITHUB_DEPLOY_REPO:-your-username/your-repo}-strapi:latest
+    image: ghcr.io/${GITHUB_DEPLOY_REPO:-your-username/your-repo}-strapi:${STRAPI_IMAGE_TAG:-latest}
     container_name: strapi
     restart: unless-stopped
     depends_on:
@@ -261,7 +317,7 @@ services:
       start_period: 90s
 
   storefront:
-    image: ghcr.io/${GITHUB_DEPLOY_REPO:-your-username/your-repo}-storefront:latest
+    image: ghcr.io/${GITHUB_DEPLOY_REPO:-your-username/your-repo}-storefront:${STOREFRONT_IMAGE_TAG:-latest}
     container_name: storefront
     restart: unless-stopped
     depends_on:
@@ -371,89 +427,19 @@ services:
       - app_network
 
   # ==========================================
-  # Observability & Monitoring (OpenObserve)
+  # Management & Container Dashboard (Portainer)
   # ==========================================
-  openobserve:
-    image: o2cr.ai/openobserve/openobserve-enterprise:latest
-    container_name: openobserve
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
     restart: unless-stopped
-    environment:
-      - ZO_DATA_DIR=/data
-      - ZO_ROOT_USER_EMAIL=${OPENOBSERVE_ROOT_USER_EMAIL:-admin@example.com}
-      - ZO_ROOT_USER_PASSWORD=${OPENOBSERVE_ROOT_USER_PASSWORD:-AdminPass#12345}
-    volumes:
-      - openobserve_data:/data
+    security_opt:
+      - no-new-privileges:true
     ports:
-      - "127.0.0.1:5080:5080"
-    networks:
-      - app_network
-
-  vector:
-    image: timberio/vector:0.38.0-alpine
-    container_name: vector
-    user: "root"
-    restart: unless-stopped
-    depends_on:
-      openobserve:
-        condition: service_started
+      - "9443:9443"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./vector.yaml:/etc/vector/vector.yaml:ro
-      - caddy_logs:/var/log/caddy:ro
-    environment:
-      - OPENOBSERVE_ROOT_USER_EMAIL=${OPENOBSERVE_ROOT_USER_EMAIL:-admin@example.com}
-      - OPENOBSERVE_ROOT_USER_PASSWORD=${OPENOBSERVE_ROOT_USER_PASSWORD:-AdminPass#12345}
-    networks:
-      - app_network
-
-  cadvisor:
-    image: zcube/cadvisor:latest
-    container_name: cadvisor
-    restart: unless-stopped
-    privileged: true
-    devices:
-      - /dev/kmsg
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
-    ports:
-      - "127.0.0.1:8080:8080"
-    networks:
-      - app_network
-
-  # Collects docker stats per container and sends to OpenObserve docker_stats stream
-  docker-stats-exporter:
-    image: docker:cli
-    container_name: docker-stats-exporter
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      - OO_EMAIL=${OPENOBSERVE_ROOT_USER_EMAIL:-admin@example.com}
-      - OO_PASS=${OPENOBSERVE_ROOT_USER_PASSWORD:-AdminPass#12345}
-    entrypoint: sh
-    command:
-      - -c
-      - |
-        apk add --no-cache curl -q 2>/dev/null
-        while true; do
-          ts=$$(date -u +%s)000000
-          docker stats --no-stream --format '{{json .}}' | while IFS= read -r line; do
-            payload=$$(echo "$$line" | sed "s/}$$/, \"_timestamp\": $$ts}/")
-            curl -s -X POST \
-              -u "$$OO_EMAIL:$$OO_PASS" \
-              -H "Content-Type: application/json" \
-              -d "[$$payload]" \
-              http://openobserve:5080/api/default/docker_stats/_json > /dev/null
-          done
-          sleep 30
-        done
-    depends_on:
-      openobserve:
-        condition: service_started
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
     networks:
       - app_network
 
@@ -466,7 +452,7 @@ volumes:
   caddy_data:
   caddy_config:
   caddy_logs:
-  openobserve_data:
+  portainer_data:
 
 networks:
   app_network:

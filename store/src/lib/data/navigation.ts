@@ -1,6 +1,7 @@
 "use server"
 import { cacheLife, cacheTag } from "next/cache"
 import { getStrapiServerUrl } from "@lib/util/server-urls"
+import { fetchWithRetry } from "@lib/util/fetch-retry"
 
 const STRAPI_URL = getStrapiServerUrl()
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN
@@ -32,7 +33,7 @@ async function _cachedNavigation(
   cacheTag("navigation")
 
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${STRAPI_URL}/api/navigation/render/${slugOrId}?type=TREE`,
       {
         headers: {
@@ -44,7 +45,11 @@ async function _cachedNavigation(
     )
 
     if (!response.ok) {
-      if (response.status === 404) {
+      if (
+        response.status === 404 ||
+        response.status === 401 ||
+        response.status === 403
+      ) {
         cacheLife("days")
         return []
       }

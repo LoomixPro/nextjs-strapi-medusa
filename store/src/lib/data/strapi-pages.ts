@@ -4,6 +4,7 @@ import { cacheTag } from "next/cache"
 import { getStrapiServerUrl } from "@lib/util/server-urls"
 import { getLocale } from "@lib/data/locale-actions"
 import { getStrapLocale } from "./homepage"
+import { fetchWithRetry } from "@lib/util/fetch-retry"
 
 const STRAPI_URL = getStrapiServerUrl()
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN
@@ -135,7 +136,7 @@ async function getAboutPageDataCached(
 ): Promise<AboutPageData | null> {
   "use cache"
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${STRAPI_URL}/api/about-page?locale=${strapiLocale}`,
       {
         headers: {
@@ -169,7 +170,7 @@ async function getFAQPageDataCached(
 ): Promise<FAQPageData | null> {
   "use cache"
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${STRAPI_URL}/api/faq-page?locale=${strapiLocale}`,
       {
         headers: {
@@ -284,7 +285,7 @@ async function getContactPageDataCached(
 ): Promise<ContactPageData | null> {
   "use cache"
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${STRAPI_URL}/api/contact-page?locale=${strapiLocale}`,
       {
         headers: {
@@ -387,7 +388,7 @@ async function getPrivacyPageDataCached(
 ): Promise<PrivacyPageData | null> {
   "use cache"
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${STRAPI_URL}/api/privacy-page?locale=${strapiLocale}`,
       {
         headers: {
@@ -478,7 +479,7 @@ async function getTermsPageDataCached(
 ): Promise<TermsPageData | null> {
   "use cache"
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${STRAPI_URL}/api/terms-page?locale=${strapiLocale}`,
       {
         headers: {
@@ -621,7 +622,7 @@ async function getSizeGuidePageDataCached(
 ): Promise<SizeGuidePageData | null> {
   "use cache"
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${STRAPI_URL}/api/size-guide-page?locale=${strapiLocale}`,
       {
         headers: {
@@ -724,7 +725,7 @@ async function getReturnPageDataCached(
 ): Promise<ReturnPageData | null> {
   "use cache"
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${STRAPI_URL}/api/returns-page?locale=${strapiLocale}`,
       {
         headers: {

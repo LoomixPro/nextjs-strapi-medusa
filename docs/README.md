@@ -29,7 +29,7 @@ Welcome to the technical developer documentation for the **Loomix Commerce** ent
    Step-by-step developer guides: adding Medusa workflows, creating custom Loomix blocks, option translations, and payment gateways.
 
 8. 🌐 **[DevOps & VPS Deployment Guide](08-devops-and-deployment.md)**  
-   VPS sizing, phased Docker deployment, Caddy reverse proxy with auto-HTTPS SSL, and Umami web analytics.
+   VPS sizing, phased Docker deployment, Caddy reverse proxy with auto-HTTPS SSL, Umami web analytics, and Portainer container management.
 
 9. 🔍 **[Troubleshooting & FAQ](09-troubleshooting-and-faq.md)**  
    Fixing CORS issues, product visibility, color swatch debugging, Linux Swap configuration, and database migrations.

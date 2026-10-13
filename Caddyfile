@@ -1,6 +1,6 @@
 {
 	# Global options
-	email { $ACME_EMAIL:admin@example.com }
+	email {$ACME_EMAIL:admin@example.com}
 	acme_ca https://acme-v02.api.letsencrypt.org/directory
 
 	# Disable HTTP/3 (QUIC) for maximum compatibility with mobile operators and VPNs
@@ -35,10 +35,10 @@
 
 # CSP for Backend/Admin/Monitoring UIs: strictly prevents framing/clickjacking
 (csp_admin) {
-	header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https: http:; frame-ancestors 'none'"
+	header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https: http: wss: ws:; frame-ancestors 'none'"
 }
 
-# JSON access logs — rotated and shipped to OpenObserve via Vector
+# JSON access logs
 (access_log) {
 	log {
 		output file /var/log/caddy/access.log {
@@ -87,10 +87,14 @@ analytics.local {
 	reverse_proxy umami:3000
 }
 
-monitor.local {
+portainer.local, monitor.local {
 	tls internal
 	import access_log
-	reverse_proxy openobserve:5080
+	reverse_proxy https://portainer:9443 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
 }
 
 search.local {
@@ -120,15 +124,15 @@ search.local {
 # Production Hostnames (Auto HTTPS with Let's Encrypt / ZeroSSL)
 # =============================================================================
 
-{ $DOMAIN }, www. { $DOMAIN } {
+{$DOMAIN}, www.{$DOMAIN} {
 	encode zstd gzip
 	import security_headers
 	import csp_storefront
 	import access_log
 
 	# Canonicalize www to root domain
-	@www host www. { $DOMAIN }
-	redir @www https:// { $DOMAIN } { uri } permanent
+	@www host www.{$DOMAIN}
+	redir @www https://{$DOMAIN}{uri} permanent
 
 	# High-performance caching for Next.js and static assets
 	@static {
@@ -146,7 +150,7 @@ search.local {
 	reverse_proxy storefront:8000
 }
 
-api. { $DOMAIN } {
+api.{$DOMAIN} {
 	encode zstd gzip
 	import security_headers
 	import access_log
@@ -163,7 +167,7 @@ api. { $DOMAIN } {
 	}
 }
 
-search. { $DOMAIN } {
+search.{$DOMAIN} {
 	encode zstd gzip
 	import security_headers
 	import access_log
@@ -187,7 +191,7 @@ search. { $DOMAIN } {
 	reverse_proxy meilisearch:7700
 }
 
-admin. { $DOMAIN } {
+admin.{$DOMAIN} {
 	encode zstd gzip
 	import security_headers
 	import csp_admin
@@ -196,7 +200,7 @@ admin. { $DOMAIN } {
 	reverse_proxy strapi:1337
 }
 
-analytics. { $DOMAIN } {
+analytics.{$DOMAIN} {
 	encode zstd gzip
 	import security_headers
 	import csp_admin
@@ -204,11 +208,15 @@ analytics. { $DOMAIN } {
 	reverse_proxy umami:3000
 }
 
-monitor. { $DOMAIN } {
+portainer.{$DOMAIN}, monitor.{$DOMAIN} {
 	encode zstd gzip
 	import security_headers
 	import csp_admin
 	import access_log
 
-	reverse_proxy openobserve:5080
+	reverse_proxy https://portainer:9443 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
 }

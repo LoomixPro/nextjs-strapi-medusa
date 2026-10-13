@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 #  Full-Stack E-Commerce Server Deployment & Setup Wizard
-#  (Next.js Storefront + Medusa Backend + Strapi CMS + Caddy + OpenObserve)
+#  (Next.js Storefront + Medusa Backend + Strapi CMS + Caddy + Portainer)
 #  Based on Project Deployment Architecture & README.md
 # ==============================================================================
 
@@ -532,13 +532,6 @@ configure_profile_and_env() {
     update_env_var "MINIO_ROOT_USER" "$minio_user"
     update_env_var "MINIO_ROOT_PASSWORD" "$minio_pwd"
 
-    local oobs_email="$medusa_email"
-    local oobs_pwd="$medusa_pwd"
-    prompt_default "OpenObserve Root Email" "$oobs_email" oobs_email
-    prompt_default "OpenObserve Root Password" "$oobs_pwd" oobs_pwd
-    update_env_var "OPENOBSERVE_ROOT_USER_EMAIL" "$oobs_email"
-    update_env_var "OPENOBSERVE_ROOT_USER_PASSWORD" "$oobs_pwd"
-
     # Profile Specific URL configurations
     case "$profile" in
         A)
@@ -551,7 +544,7 @@ configure_profile_and_env() {
             update_env_var "MINIO_PUBLIC_URL" "http://${server_ip}:9001/mystore"
             update_env_var "GOOGLE_CALLBACK_URL" "http://${server_ip}:8000/ir/account/auth/callback"
             update_env_var "UMAMI_PUBLIC_URL" "http://${server_ip}:3005"
-            update_env_var "OPENOBSERVE_PUBLIC_URL" "http://${server_ip}:5080"
+            update_env_var "PORTAINER_PUBLIC_URL" "https://${server_ip}:9443"
             update_env_var "MEDUSA_ALLOW_HTTP_COOKIES" "true"
             update_env_var "STORE_CORS" ""
             update_env_var "ADMIN_CORS" ""
@@ -566,7 +559,7 @@ configure_profile_and_env() {
             update_env_var "MINIO_PUBLIC_URL" "https://api.local/minio/mystore"
             update_env_var "GOOGLE_CALLBACK_URL" "https://store.local/ir/account/auth/callback"
             update_env_var "UMAMI_PUBLIC_URL" "https://analytics.local"
-            update_env_var "OPENOBSERVE_PUBLIC_URL" "https://monitor.local"
+            update_env_var "PORTAINER_PUBLIC_URL" "https://portainer.local"
             update_env_var "MEDUSA_ALLOW_HTTP_COOKIES" "false"
             update_env_var "STORE_CORS" ""
             update_env_var "ADMIN_CORS" ""
@@ -588,7 +581,7 @@ configure_profile_and_env() {
             update_env_var "MINIO_PUBLIC_URL" "https://api.${domain}/minio/mystore"
             update_env_var "GOOGLE_CALLBACK_URL" "https://${domain}/ir/account/auth/callback"
             update_env_var "UMAMI_PUBLIC_URL" "https://analytics.${domain}"
-            update_env_var "OPENOBSERVE_PUBLIC_URL" "https://monitor.${domain}"
+            update_env_var "PORTAINER_PUBLIC_URL" "https://portainer.${domain}"
             update_env_var "MEDUSA_ALLOW_HTTP_COOKIES" "false"
             update_env_var "STORE_CORS" ""
             update_env_var "ADMIN_CORS" ""
@@ -687,22 +680,55 @@ configure_profile_and_env() {
 
         success "Optional integration settings saved to .env."
     fi
+
+    # Offsite S3 Cloud Backup Configuration (Cloudflare R2 / AWS S3 / Arvan)
+    echo ""
+    echo -e "${BOLD}Offsite Cloud Backup Configuration (Cloudflare R2 / AWS S3 / Arvan):${NC}"
+    local setup_s3_backup="N"
+    prompt_default "Do you want to configure automated offsite S3 cloud backups now? (y/N)" "N" setup_s3_backup
+    if [[ "$setup_s3_backup" =~ ^[Yy]$ ]]; then
+        local s3_provider="Cloudflare" s3_access_key="" s3_secret_key="" s3_endpoint="" s3_bucket="my-store-backups" s3_interval="3600"
+        prompt_default "S3 Provider (Cloudflare, AWS, Wasabi, Minio, Other)" "Cloudflare" s3_provider
+        prompt_default "S3 Access Key ID" "" s3_access_key
+        prompt_secret "S3 Secret Access Key" "" s3_secret_key
+        prompt_default "S3 Endpoint URL (e.g. https://<account_id>.r2.cloudflarestorage.com)" "" s3_endpoint
+        prompt_default "S3 Bucket Name" "my-store-backups" s3_bucket
+        prompt_default "S3 Sync Interval (in seconds, e.g. 3600 = 1 hour)" "3600" s3_interval
+
+        update_env_var "OFFSITE_S3_PROVIDER" "$s3_provider"
+        update_env_var "OFFSITE_S3_ACCESS_KEY_ID" "$s3_access_key"
+        update_env_var "OFFSITE_S3_SECRET_ACCESS_KEY" "$s3_secret_key"
+        update_env_var "OFFSITE_S3_ENDPOINT" "$s3_endpoint"
+        update_env_var "OFFSITE_S3_BUCKET" "$s3_bucket"
+        update_env_var "OFFSITE_SYNC_INTERVAL" "$s3_interval"
+        success "Offsite S3 cloud backup settings saved to .env."
+    else
+        update_env_var "OFFSITE_S3_PROVIDER" "Cloudflare"
+        update_env_var "OFFSITE_S3_ACCESS_KEY_ID" ""
+        update_env_var "OFFSITE_S3_SECRET_ACCESS_KEY" ""
+        update_env_var "OFFSITE_S3_ENDPOINT" ""
+        update_env_var "OFFSITE_S3_BUCKET" "my-store-backups"
+        update_env_var "OFFSITE_SYNC_INTERVAL" "3600"
+        info "Skipping offsite S3 cloud backup configuration. (Can be configured anytime later in .env)"
+    fi
 }
 
 # ------------------------------------------------------------------------------
 # Phase 1: Running Infrastructure Services
 # ------------------------------------------------------------------------------
 phase_1_infrastructure() {
-    step_header "1" "Running Infrastructure Services (Postgres, Redis, Meilisearch, MinIO)"
+    step_header "1" "Running Infrastructure Services (Postgres, Backup, Redis, Meilisearch, MinIO)"
     
     pull_with_progress "postgres" "PostgreSQL Database" || true
+    pull_with_progress "postgres-backup" "Automated Postgres Backup Service" || true
+    pull_with_progress "s3-backup-sync" "S3 Offsite Cloud Backup Sync" || true
     pull_with_progress "redis" "Redis Cache" || true
     pull_with_progress "meilisearch" "Meilisearch Engine" || true
     pull_with_progress "minio" "MinIO Object Storage" || true
     pull_with_progress "minio-setup" "MinIO Setup Client" || true
 
-    info "Launching database and storage containers..."
-    docker compose up -d postgres redis meilisearch minio minio-setup >/dev/null 2>&1 || docker compose up -d postgres redis meilisearch minio minio-setup
+    info "Launching database, backup and storage containers..."
+    docker compose up -d postgres postgres-backup s3-backup-sync redis meilisearch minio minio-setup >/dev/null 2>&1 || docker compose up -d postgres postgres-backup s3-backup-sync redis meilisearch minio minio-setup
 
     wait_for_health "postgres" 60
     wait_for_health "redis" 30
@@ -1127,21 +1153,18 @@ EOF
 }
 
 # ------------------------------------------------------------------------------
-# Phase 10: Observability & Monitoring (OpenObserve)
+# Phase 10: Management & Container Dashboard (Portainer)
 # ------------------------------------------------------------------------------
 phase_10_observability() {
-    step_header "10" "Deploying Observability Stack (OpenObserve, Vector, cAdvisor)"
-    prompt_default "Do you want to start the monitoring stack (OpenObserve / Vector / cAdvisor)? (Y/n)" "Y" start_mon
+    step_header "10" "Deploying Container Dashboard (Portainer)"
+    prompt_default "Do you want to start Portainer container dashboard? (Y/n)" "Y" start_mon
     if [[ "$start_mon" =~ ^[Yy]$ ]]; then
-        pull_with_progress "openobserve" "OpenObserve Monitoring" || true
-        pull_with_progress "vector" "Vector Log Shipper" || true
-        pull_with_progress "cadvisor" "cAdvisor Metrics" || true
-        pull_with_progress "docker-stats-exporter" "Docker Stats Exporter" || true
+        pull_with_progress "portainer" "Portainer Dashboard" || true
 
-        info "Launching OpenObserve, Vector, cAdvisor, and docker-stats-exporter..."
-        docker compose up -d openobserve vector cadvisor docker-stats-exporter >/dev/null 2>&1 || docker compose up -d openobserve vector cadvisor docker-stats-exporter
-        wait_for_port "127.0.0.1" "5080" "OpenObserve" 45 || true
-        success "Observability stack is active."
+        info "Launching Portainer dashboard..."
+        docker compose up -d portainer >/dev/null 2>&1 || docker compose up -d portainer
+        wait_for_port "127.0.0.1" "9443" "Portainer" 25 || true
+        success "Portainer container dashboard is active on port 9443."
     fi
 }
 
@@ -1191,24 +1214,12 @@ phase_20_seed_data() {
 # Final Summary & Status Report
 # ------------------------------------------------------------------------------
 final_summary() {
-    local sf_url medusa_url strapi_url umami_url oobs_url
+    local sf_url medusa_url strapi_url umami_url portainer_url
     sf_url=$(get_env_var "STOREFRONT_PUBLIC_URL")
     medusa_url=$(get_env_var "MEDUSA_BACKEND_PUBLIC_URL")
     strapi_url=$(get_env_var "STRAPI_PUBLIC_URL")
     umami_url=$(get_env_var "UMAMI_PUBLIC_URL")
-    oobs_url=$(get_env_var "OPENOBSERVE_PUBLIC_URL")
-
-    if [ -z "$oobs_url" ]; then
-        if [[ "$sf_url" == *".local"* ]]; then
-            oobs_url="https://monitor.local"
-        elif [[ "$sf_url" == https://* ]]; then
-            local domain
-            domain=$(echo "$sf_url" | sed -e 's|^https://||' -e 's|/.*$||' -e 's|^www\.||')
-            oobs_url="https://monitor.${domain}"
-        else
-            oobs_url="http://$(detect_server_ip):5080"
-        fi
-    fi
+    portainer_url="https://$(detect_server_ip):9443"
 
     echo ""
     echo -e "${GREEN}${BOLD}==============================================================================${NC}"
@@ -1220,12 +1231,20 @@ final_summary() {
     echo -e "  🛒  ${BOLD}Medusa Admin:${NC}       ${CYAN}${medusa_url:-N/A}/app${NC}"
     echo -e "  📝  ${BOLD}Strapi Admin:${NC}       ${CYAN}${strapi_url:-N/A}/admin${NC}"
     echo -e "  📊  ${BOLD}Umami Analytics:${NC}    ${CYAN}${umami_url:-N/A}${NC}"
-    echo -e "  📈  ${BOLD}OpenObserve:${NC}        ${CYAN}${oobs_url}${NC}"
+    echo -e "  🐳  ${BOLD}Portainer Dashboard:${NC}${CYAN}${portainer_url}${NC}"
     echo ""
     echo -e " ${BOLD}Default Admin Credentials:${NC}"
     echo -e "  • Medusa:       ${GRAY}$(get_env_var "MEDUSA_ADMIN_EMAIL")${NC} / ${GRAY}$(get_env_var "MEDUSA_ADMIN_PASSWORD")${NC}"
     echo -e "  • MinIO:        ${GRAY}$(get_env_var "MINIO_ROOT_USER")${NC} / ${GRAY}$(get_env_var "MINIO_ROOT_PASSWORD")${NC}"
-    echo -e "  • OpenObserve:  ${GRAY}$(get_env_var "OPENOBSERVE_ROOT_USER_EMAIL")${NC} / ${GRAY}$(get_env_var "OPENOBSERVE_ROOT_USER_PASSWORD")${NC}"
+    echo -e "  • Portainer:    ${GRAY}Create admin password on first browser visit${NC}"
+    local s3_bucket s3_endpoint
+    s3_bucket=$(get_env_var "OFFSITE_S3_BUCKET")
+    s3_endpoint=$(get_env_var "OFFSITE_S3_ENDPOINT")
+    if [ -n "$s3_endpoint" ]; then
+        echo -e "  ☁️  ${BOLD}Cloud Backups:${NC}      ${GREEN}Active (Syncing to S3 bucket: ${s3_bucket:-N/A})${NC}"
+    else
+        echo -e "  ☁️  ${BOLD}Cloud Backups:${NC}      ${YELLOW}Local only (Configure OFFSITE_S3_* in .env for S3/R2)${NC}"
+    fi
     echo ""
 
     if [[ "$sf_url" == *".local"* ]]; then
@@ -1239,6 +1258,8 @@ final_summary() {
 
     echo -e " ${BOLD}Useful Docker Management Commands:${NC}"
     echo -e "  • Check container status:   ${CYAN}docker compose ps${NC}"
+    echo -e "  • Trigger manual DB backup: ${CYAN}docker exec postgres-backup /backup.sh${NC}"
+    echo -e "  • Sync backups to Cloud S3: ${CYAN}docker exec s3-backup-sync rclone sync /backups s3remote:\${OFFSITE_S3_BUCKET}/backups${NC}"
     echo -e "  • View live Medusa logs:    ${CYAN}docker compose logs -f medusa${NC}"
     echo -e "  • View live Strapi logs:    ${CYAN}docker compose logs -f strapi${NC}"
     echo -e "  • View live Storefront logs:${CYAN}docker compose logs -f storefront${NC}"

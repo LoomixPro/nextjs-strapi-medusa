@@ -6,7 +6,7 @@ This guide details production deployment for **Next-Strapi-Medusa** on a Virtual
 
 ## 💻 Recommended Hardware Specifications
 
-To comfortably run all microservices (Postgres, Redis, Meilisearch, MinIO, Strapi, Medusa, Next.js):
+To comfortably run all microservices (Postgres, Redis, Meilisearch, MinIO, Strapi, Medusa, Next.js, Umami, Portainer):
 - **CPU**: 4 vCPU cores minimum
 - **RAM**: 8 GB RAM minimum *(4 GB RAM supported if Linux Swap is enabled)*
 - **Disk**: 40 GB SSD/NVMe minimum
@@ -60,8 +60,12 @@ analytics.yourdomain.com {
     reverse_proxy umami:3000
 }
 
-monitor.yourdomain.com {
-    reverse_proxy openobserve:5080
+portainer.yourdomain.com, monitor.yourdomain.com {
+    reverse_proxy https://portainer:9443 {
+        transport http {
+            tls_insecure_skip_verify
+        }
+    }
 }
 ```
 
@@ -98,19 +102,128 @@ docker compose up -d --force-recreate storefront
 
 ---
 
-## 🔭 OpenObserve & Vector (Centralized Observability & Logging)
+## 🐳 Portainer CE (Container Management, Live Logs & Visual Metrics)
 
-OpenObserve provides a unified, petabyte-scale observability platform for logs, metrics, and traces.
+Portainer Community Edition (CE) provides a lightweight (~40MB RAM footprint), high-performance web dashboard for managing all Docker containers, viewing live streaming logs, tracking real-time CPU/RAM metrics, and executing commands inside container terminals directly from the browser.
 
-1. **Docker Logs Pipeline (Vector):**
-   - The `vector` container automatically reads `/var/run/docker.sock` and streams all logs into OpenObserve under stream `docker_logs`.
-2. **Access OpenObserve Dashboard:**
-   - URL: `https://monitor.local` (Profile B) or `https://monitor.yourdomain.com` (Profile C) or `http://127.0.0.1:5080` (Local/Host).
-   - Log in using `OPENOBSERVE_ROOT_USER_EMAIL` and `OPENOBSERVE_ROOT_USER_PASSWORD` configured in `.env`.
-3. **Start Observability Stack:**
+### Features & Capabilities:
+- **Container Lifecycle Controls:** Start, stop, restart, pause, kill, and inspect container health with a single click.
+- **Live Logs (📄):** View live stdout/stderr logs from any container (`caddy`, `strapi`, `medusa`, `storefront`, `postgres`, etc.) in real time without SSH or typing `docker compose logs`.
+- **Live Resource Stats (📊):** View real-time interactive charts of CPU consumption, RAM usage, network bandwidth, and active processes for each container.
+- **In-Container Web Console (`>_`):** Open an interactive shell terminal (`sh` / `bash`) directly inside any container with one click (equivalent to `docker exec -it <container> sh`).
+- **Stack Management (Docker Compose):** Inspect, modify environment variables, and redeploy Docker Compose stacks directly from the web interface.
+- **Volume & Image Pruning:** Identify and remove unused Docker images or dangling volumes to reclaim server disk space.
+
+### Access Portainer Dashboard:
+- **Direct HTTPS (IP):** `https://<YOUR_VPS_IP>:9443`
+- **Via Domain (Caddy):** `https://portainer.yourdomain.com` (or `https://monitor.yourdomain.com`)
+- **Local HTTPS (Profile B):** `https://portainer.local` (or `https://monitor.local`)
+
+### Launch Portainer:
 ```bash
-docker compose up -d openobserve vector
+docker compose up -d portainer
 ```
+
+### ⏱️ Initial 5-Minute Security Window & Setup
+Portainer includes a built-in security timeout: the initial administrator password must be set within 5 minutes of starting the container.
+1. Immediately open `https://<YOUR_VPS_IP>:9443` in your browser.
+2. Enter your username (`admin`) and a secure password (**minimum 12 characters**).
+3. Click **Create user** to complete setup.
+4. If the page shows *"Your Portainer instance timed out for security purposes"*, simply reset the timer by restarting the container:
+   ```bash
+   docker restart portainer
+   ```
+   Then refresh the browser (`F5`) and submit the admin account form.
+
+
+---
+
+## 💾 Automated Database Backups (`prodrigestivill/postgres-backup-local`)
+
+The system includes the official, battle-tested [prodrigestivill/postgres-backup-local:15](https://github.com/prodrigestivill/docker-postgres-backup-local) container integrated directly into `docker-compose.yml`.
+
+### Features
+- **Zero OS dependencies:** Backups run inside an isolated Docker container with standard `pg_dump`.
+- **Multi-database support:** Automatically dumps `medusa`, `strapi`, and `umami` databases.
+- **Rotation & Retention:** Organizes backups into `daily/`, `weekly/`, `monthly/`, and `last/` pointers, auto-purging old files (14 days retention).
+- **Auto-run on schedule:** Runs every day (`@daily`) by default via cron inside the container.
+
+### 1. Manual On-Demand Backup (Before Updates)
+Before updating any container or code, take an immediate database snapshot:
+```bash
+docker exec postgres-backup /backup.sh
+```
+Files will be immediately created in `./backups/last/` and `./backups/daily/`.
+
+### 2. Database Restoration
+To restore a database from the latest or any specific backup:
+```bash
+# Restore Medusa
+gzip -dc ./backups/last/medusa-*.sql.gz | docker exec -i postgres psql -U postgres -d medusa
+
+# Restore Strapi
+gzip -dc ./backups/last/strapi-*.sql.gz | docker exec -i postgres psql -U postgres -d strapi
+
+# Restart services to refresh connection pools:
+docker compose restart medusa strapi
+```
+
+### 3. Offsite S3 Cloud Backups (Cloudflare R2 / AWS S3 / Arvan / MinIO)
+To ensure disaster recovery even if the server is permanently damaged or lost, the `s3-backup-sync` container (powered by `rclone/rclone`) automatically mirrors local backups to remote S3-compatible cloud storage.
+
+1. **Configure S3 credentials in `.env`:**
+   ```env
+   OFFSITE_S3_PROVIDER=Cloudflare
+   OFFSITE_S3_ACCESS_KEY_ID=your_r2_or_s3_access_key
+   OFFSITE_S3_SECRET_ACCESS_KEY=your_r2_or_s3_secret_key
+   OFFSITE_S3_ENDPOINT=https://your_account_id.r2.cloudflarestorage.com
+   OFFSITE_S3_BUCKET=my-store-backups
+   OFFSITE_SYNC_INTERVAL=3600
+   ```
+   *(If not configured, the container stands by dormant without consuming CPU or crashing).*
+
+2. **Trigger Instant Offsite Cloud Sync:**
+   ```bash
+   docker exec s3-backup-sync rclone sync /backups s3remote:${OFFSITE_S3_BUCKET:-next-strapi-medusa-backups}/backups
+   ```
+
+3. **Disaster Recovery (Restoring from S3 onto a brand-new VPS):**
+   ```bash
+   docker run --rm -v ./backups:/backups \
+     -e RCLONE_CONFIG_S3REMOTE_TYPE=s3 \
+     -e RCLONE_CONFIG_S3REMOTE_PROVIDER=${OFFSITE_S3_PROVIDER:-Cloudflare} \
+     -e RCLONE_CONFIG_S3REMOTE_ACCESS_KEY_ID=${OFFSITE_S3_ACCESS_KEY_ID} \
+     -e RCLONE_CONFIG_S3REMOTE_SECRET_ACCESS_KEY=${OFFSITE_S3_SECRET_ACCESS_KEY} \
+     -e RCLONE_CONFIG_S3REMOTE_ENDPOINT=${OFFSITE_S3_ENDPOINT} \
+     rclone/rclone copy s3remote:${OFFSITE_S3_BUCKET}/backups /backups
+   ```
+
+### 4. Update & Rollback Workflow (Pre-built Docker Images)
+Since services run pre-built Docker images pulled from GitHub Container Registry (GHCR):
+
+1. **Snapshot DB:**
+   ```bash
+   docker exec postgres-backup /backup.sh
+   ```
+2. **Deploy new version:**
+   ```bash
+   docker compose pull storefront && docker compose up -d storefront
+   ```
+3. **If something fails (Rollback):**
+   - GitHub Actions tags every build with both `:latest` and `:sha-<commit_sha>` (e.g. `sha-7a1b2c3`).
+   - To roll back Storefront to the previous working commit without modifying files:
+     ```bash
+     # 1. Pull the previous working image by commit SHA:
+     docker pull ghcr.io/<ORG>/<REPO>-storefront:sha-<PREVIOUS_COMMIT_SHA>
+
+     # 2. Retag it as latest:
+     docker tag ghcr.io/<ORG>/<REPO>-storefront:sha-<PREVIOUS_COMMIT_SHA> ghcr.io/<ORG>/<REPO>-storefront:latest
+
+     # 3. Restart container:
+     docker compose up -d storefront
+     ```
+   - *Alternative:* You can also set `STOREFRONT_IMAGE_TAG=sha-<PREVIOUS_COMMIT_SHA>` in `.env` and run `docker compose up -d storefront`.
+   - If database migration broke backward compatibility, restore from `./backups/last/` as shown above.
 
 
 ---

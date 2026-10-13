@@ -5,6 +5,7 @@ import { getLocale } from "@lib/data/locale-actions"
 import { getStrapLocale } from "./homepage"
 import { getMediaUrl } from "@lib/util/strapi-media"
 import { getStrapiServerUrl } from "@lib/util/server-urls"
+import { fetchWithRetry } from "@lib/util/fetch-retry"
 
 const STRAPI_URL = getStrapiServerUrl()
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN
@@ -63,7 +64,7 @@ async function fetchBlogPostsFromStrapi(
       sort: "publishedAt:desc",
     })
 
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${STRAPI_URL}/api/blog-posts?${query.toString()}`,
       {
         headers: {
@@ -144,7 +145,7 @@ async function getBlogPostByIdCached(
       "populate[blocks][populate]": "*",
     })
 
-    const docResponse = await fetch(
+    const docResponse = await fetchWithRetry(
       `${STRAPI_URL}/api/blog-posts/${idOrSlug}?${query.toString()}`,
       {
         headers: {
@@ -173,7 +174,7 @@ async function getBlogPostByIdCached(
       "populate[blocks][populate]": "*",
     })
 
-    const slugResponse = await fetch(
+    const slugResponse = await fetchWithRetry(
       `${STRAPI_URL}/api/blog-posts?${slugQuery.toString()}`,
       {
         headers: {
@@ -221,7 +222,7 @@ async function getBlogCategoriesCached(
       locale: strapiLocale,
     })
 
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${STRAPI_URL}/api/blog-categories?${query.toString()}`,
       {
         headers: {

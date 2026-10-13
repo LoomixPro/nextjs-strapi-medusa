@@ -1,5 +1,6 @@
 "use server"
 import { cacheTag } from "next/cache"
+import { fetchWithRetry } from "@lib/util/fetch-retry"
 
 export interface StoreCampaign {
   id: string
@@ -29,7 +30,7 @@ export const listActiveCampaigns = async (): Promise<StoreCampaign[]> => {
 
     const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 
-    const res = await fetch(`${baseUrl}/store/campaigns`, {
+    const res = await fetchWithRetry(`${baseUrl}/store/campaigns`, {
       headers: {
         "x-publishable-api-key": publishableKey,
       },
@@ -58,7 +59,7 @@ export const getCampaignProducts = async (
 
     const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 
-    const res = await fetch(
+    const res = await fetchWithRetry(
       `${baseUrl}/store/campaigns/${campaignId}/products`,
       {
         headers: {

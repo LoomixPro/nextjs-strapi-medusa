@@ -319,7 +319,11 @@ async function _fetchHomepageData(
   )
 
   if (!response.ok) {
-    if (response.status === 404) {
+    if (
+      response.status === 404 ||
+      response.status === 401 ||
+      response.status === 403
+    ) {
       return null
     }
     throw new Error(`Strapi homepage fetch failed: ${response.status}`)

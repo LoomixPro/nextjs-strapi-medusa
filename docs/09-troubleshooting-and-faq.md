@@ -341,3 +341,27 @@ docker compose up -d --build medusa
 ### Alternative: HTTPS via Caddy (Profile B — recommended)
 
 Use README [Phase 2](README.md#6-phase-2-https-gateway-caddy): `hosts` file + `https://api.local/app`. Keep `MEDUSA_ALLOW_HTTP_COOKIES=false`.
+
+---
+
+## 🛑 13. Portainer — "Your Portainer instance timed out for security purposes"
+
+### Symptom:
+When accessing the Portainer dashboard for the first time, you see the message:
+*"Your Portainer instance timed out for security purposes. To re-enable your Portainer instance, you will need to restart Portainer."*
+
+### Cause:
+Portainer includes a security timer: if the initial administrator account is not created within 5 minutes of container startup, the setup page is automatically disabled to prevent unauthorized takeover.
+
+### Solution:
+1. Restart the Portainer container on your server to reset the 5-minute security window:
+   ```bash
+   docker restart portainer
+   ```
+2. Immediately refresh the browser page (`F5`).
+3. Set username to `admin` and enter a strong password (**at least 12 characters**).
+4. Click **Create user**. If a setup token is requested by Portainer, retrieve it from the container logs:
+   ```bash
+   docker logs portainer --tail 30
+   ```
+

@@ -1,14 +1,19 @@
 export async function fetchWithRetry(
   url: string,
   options?: RequestInit,
-  retries: number = 3,
-  delay: number = 1000
+  retries: number = 2,
+  delay: number = 500,
+  timeoutMs: number = 3500
 ): Promise<Response> {
   let lastError: any
 
   for (let i = 0; i < retries; i++) {
     try {
-      const response = await fetch(url, options)
+      const signal = options?.signal || AbortSignal.timeout(timeoutMs)
+      const response = await fetch(url, {
+        ...options,
+        signal,
+      })
 
       // If successful or 404 (not found is a valid response in Next.js/Strapi), return it
       if (response.ok || response.status === 404) {

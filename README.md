@@ -3,7 +3,7 @@
 > 📚 **Comprehensive Developer Documentation**  
 > For supplementary development guides, system architecture, customization instructions, and adding features, please refer to [docs/README.md](docs/README.md).
 
-This guide provides step-by-step instructions for transferring files and running the **Loomix Commerce** services — infrastructure, **Strapi**, **Medusa**, the **Storefront** (Next.js), and **OpenObserve** monitoring — on a Virtual Private Server (VPS) or local VM using Docker.
+This guide provides step-by-step instructions for transferring files and running the **Loomix Commerce** services — infrastructure, **Strapi**, **Medusa**, the **Storefront** (Next.js), and **Portainer** container management & monitoring — on a Virtual Private Server (VPS) or local VM using Docker.
 
 Due to the heavy resource consumption during Next.js and Strapi builds, the deployment process is designed to be **phased** to prevent server crashes caused by CPU or memory exhaustion.
 
@@ -16,19 +16,19 @@ Due to the heavy resource consumption during Next.js and Strapi builds, the depl
 3. [⚡ Quick Start: Interactive Setup Wizard (Recommended)](#3--quick-start-interactive-setup-wizard-recommended)
 4. [Manual Phased Deployment](#4-manual-phased-deployment)
    - [Choose a Deployment Profile & Configure `.env`](#41-choose-a-deployment-profile--configure-env)
-   - [Initial GitHub Actions Builds (Backend Images)](#42-initial-github-actions-builds-backend-images)
-   - [Docker Login (Private Repositories Only)](#43-docker-login-private-repositories-only)
-   - [Phase Overview (At a Glance)](#44-phase-overview-at-a-glance)
-   - [Phase 1: Running Infrastructure](#45-phase-1-running-infrastructure)
-   - [Phase 2: HTTPS Gateway (Caddy)](#46-phase-2-https-gateway-caddy)
-   - [Phase 3: Pulling and Running Strapi CMS](#47-phase-3-pulling-and-running-strapi-cms)
-   - [Phase 4: Generating Strapi API Tokens](#48-phase-4-generating-strapi-api-tokens)
-   - [Phase 5: Pulling and Running Medusa Backend](#49-phase-5-pulling-and-running-medusa-backend)
-   - [Phase 6: Generating a Publishable API Key in Medusa](#410-phase-6-generating-a-publishable-api-key-in-medusa)
-   - [Phase 7: Retrieving and Configuring Meilisearch Search API Key](#411-phase-7-retrieving-and-configuring-meilisearch-search-api-key)
-   - [Phase 8: Umami Analytics (Before Storefront)](#412-phase-8-umami-analytics-before-storefront)
-   - [Phase 9: Building & Deploying the Storefront (GitHub Actions)](#413-phase-9-building--deploying-the-storefront-github-actions)
-   - [Phase 10: Observability & Monitoring (OpenObserve)](#414-phase-10-observability--monitoring-openobserve)
+   - [Initial GitHub Actions Builds (Backend Images)](#4-initial-github-actions-builds-backend-images)
+   - [Docker Login (Private Repositories Only)](#5-docker-login-private-repositories-only)
+   - [Phase Overview (At a Glance)](#6-phase-overview-at-a-glance)
+   - [Phase 1: Running Infrastructure](#7-phase-1-running-infrastructure)
+   - [Phase 2: HTTPS Gateway (Caddy)](#8-phase-2-https-gateway-caddy--edge-security)
+   - [Phase 3: Pulling and Running Strapi CMS](#9-phase-3-pulling-and-running-strapi-cms)
+   - [Phase 4: Generating Strapi API Tokens](#10-phase-4-retrieving-strapi-api-tokens)
+   - [Phase 5: Pulling and Running Medusa Backend](#11-phase-5-pulling-and-running-medusa-backend)
+   - [Phase 6: Generating a Publishable API Key in Medusa](#12-phase-6-generating-a-publishable-api-key-in-medusa)
+   - [Phase 7: Retrieving and Configuring Meilisearch Search API Key](#13-phase-7-retrieving-and-configuring-meilisearch-search-api-key)
+   - [Phase 8: Umami Analytics (Before Storefront)](#14-phase-8-umami-analytics-before-storefront)
+   - [Phase 9: Building & Deploying the Storefront (GitHub Actions)](#15-phase-9-building--deploying-the-storefront-github-actions)
+   - [Phase 10: Container Management & Monitoring (Portainer)](#16-phase-10-container-management--monitoring-portainer)
 5. [Switching Profiles Mid-Deployment](#5-switching-profiles-mid-deployment)
 6. [Updating the Server (Push / Pull)](#6-updating-the-server-push--pull)
 7. [Network Architecture & Port Reference](#7-network-architecture--port-reference)
@@ -40,11 +40,24 @@ Due to the heavy resource consumption during Next.js and Strapi builds, the depl
 
 ### 1. Prerequisites
 
-Ensure the following tools are installed on your VPS or VM:
+Ensure the following tools and system settings are configured on your VPS or VM:
 
-- **Docker** and **Docker Compose (v2)**  
-  *(Quick install for Ubuntu/Debian: `curl -fsSL https://get.docker.com | sudo sh`)*
-- **Git** (if cloning the repository directly)
+- **Linux Swap (Crucial for 2GB – 4GB RAM VPS)**:  
+  Multi-service Node.js / Next.js builds and Strapi startup can spike memory. Creating a 4GB swapfile completely prevents Linux Out-Of-Memory (OOM) crashes:
+  ```bash
+  sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+  ```
+- **Base Utilities & Tools**:  
+  Ensure essential command-line tools are installed:
+  ```bash
+  sudo apt-get update && sudo apt-get install -y git curl openssl jq
+  ```
+- **Docker** and **Docker Compose (v2)**:  
+  Quick install official Docker Engine on Ubuntu/Debian:
+  ```bash
+  curl -fsSL https://get.docker.com | sudo sh
+  ```
 
 **Docker permission (`docker.sock`):** On a fresh VPS or VM, `docker compose` may fail with:
 `permission denied while trying to connect to the docker API at unix:///var/run/docker.sock`
@@ -175,7 +188,7 @@ CLOUDFLARE_TUNNEL_TOKEN=
 2. **Windows `hosts` file entry:**
    Open Notepad as Administrator → `C:\Windows\System32\drivers\etc\hosts` and add:
    ```text
-   <VM_IP> store.local api.local admin.local search.local analytics.local monitor.local
+   <VM_IP> store.local api.local admin.local search.local analytics.local portainer.local monitor.local
    ```
 
 ---
@@ -194,8 +207,9 @@ STRAPI_PUBLIC_URL=https://admin.yourdomain.com
 MEILISEARCH_PUBLIC_URL=https://search.yourdomain.com
 MINIO_PUBLIC_URL=https://api.yourdomain.com/minio/mystore
 GOOGLE_CALLBACK_URL=https://yourdomain.com/ir/account/auth/callback
+PORTAINER_PUBLIC_URL=https://portainer.yourdomain.com
 
-# Caddy HTTP Basic Auth (Protects OpenObserve Monitoring Dashboard):
+# Optional Caddy HTTP Basic Auth (Extra edge protection for Strapi Admin):
 BASIC_AUTH_USER=admin
 BASIC_AUTH_HASH=$2a$14$5y/bX4mNtIj3Svb76Ria4eRekRIfEHFCYNE1ZyiBPeXYlj41rVvO.
 
@@ -213,7 +227,7 @@ CLOUDFLARE_TUNNEL_TOKEN=
    - `admin` $\rightarrow$ `YOUR_VPS_IP`
    - `search` $\rightarrow$ `YOUR_VPS_IP`
    - `analytics` $\rightarrow$ `YOUR_VPS_IP`
-   - `monitor` $\rightarrow$ `YOUR_VPS_IP`
+   - `portainer` (and/or `monitor`) $\rightarrow$ `YOUR_VPS_IP`
    
    > [!IMPORTANT]
    > During initial setup and first Caddy startup, set Cloudflare proxy status to **DNS Only (Gray Cloud)** so Caddy can automatically complete the ACME HTTP-01 / TLS-ALPN challenge to issue free Let's Encrypt / ZeroSSL certificates.
@@ -236,8 +250,8 @@ CLOUDFLARE_TUNNEL_TOKEN=
 | **Storefront** | `http://<VM_IP>:8000` | `https://store.local` | `https://yourdomain.com` |
 | **Medusa Admin** | `http://<VM_IP>:9000/app` | `https://api.local/app` | `https://api.yourdomain.com/app` |
 | **Strapi Admin** | `http://<VM_IP>:1337/admin` | `https://admin.local/admin` | `https://admin.yourdomain.com/admin` |
+| **Portainer CE** | `https://<VM_IP>:9443` | `https://portainer.local` | `https://portainer.yourdomain.com` |
 | **Umami Analytics** | `http://<VM_IP>:3005` | `https://analytics.local` | `https://analytics.yourdomain.com` |
-| **OpenObserve** | `http://<VM_IP>:5080` | `https://monitor.local` | `https://monitor.yourdomain.com` |
 | **Meilisearch** | `127.0.0.1:7700` *(Internal)* | `https://search.local` | `https://search.yourdomain.com` |
 
 ---
@@ -274,7 +288,7 @@ echo "<YOUR_PAT>" | docker login ghcr.io -u <YOUR_GITHUB_USERNAME> --password-st
 | **Phase 7** | Meilisearch Search Key → `.env` | ✅ | ✅ |
 | **Phase 8** | Umami Analytics | Optional | ✅ |
 | **Phase 9** | Storefront Next.js (GitHub Actions Build & Deploy) | ✅ | ✅ |
-| **Phase 10** | Observability (OpenObserve, Vector, cAdvisor) | Optional | ✅ Recommended |
+| **Phase 10** | Container Management & Monitoring (Portainer CE) | Optional | ✅ Recommended |
 
 ---
 
@@ -292,21 +306,21 @@ Wait until all services report `healthy`. Data is stored in Docker volumes and i
 
 *(Profile A skips this phase).*
 
-Caddy runs as a lightweight reverse-proxy container providing automatic SSL certificates, HSTS/CSP security headers, and HTTP Basic Auth.
+Caddy runs as a lightweight reverse-proxy container providing automatic SSL certificates, HSTS/CSP security headers, and reverse-proxy routing.
 
-1. **Profile B**: Uses pre-configured `.local` hostnames with internal TLS.
-2. **Profile C**: Automatically requests and renews free SSL certificates (Let's Encrypt / ZeroSSL) for your base domain and all subdomains (`api.`, `admin.`, `analytics.`, `monitor.`). Ensure DNS `A` records point to your VPS IP before starting Caddy.
-3. **HTTP Basic Auth Edge Protection**:
+1. **Profile B**: Uses pre-configured `.local` hostnames with internal TLS (`store.local`, `api.local`, `admin.local`, `analytics.local`, `portainer.local`, `monitor.local`).
+2. **Profile C**: Automatically requests and renews free SSL certificates (Let's Encrypt / ZeroSSL) for your base domain and all subdomains (`api.`, `admin.`, `analytics.`, `portainer.`, `monitor.`). Ensure DNS `A` records point to your VPS IP before starting Caddy.
+3. **HTTP Basic Auth Edge Protection (Optional)**:
    - **Strapi Admin Panel (`admin.yourdomain.com/admin*` and `/`)**: Protected with HTTP Basic Auth. Public API routes (`/api/*`) and uploaded media (`/uploads/*`) remain open so the Storefront and Medusa can fetch content freely without 401 errors.
-   - **OpenObserve Dashboard (`monitor.yourdomain.com`)**: Protected with HTTP Basic Auth (providing two-factor edge defense alongside OpenObserve credentials).
+   - **Portainer**: Protected natively by Portainer's own user authentication and session security.
    
-   To generate a secure custom password hash:
+   To generate a secure custom password hash for Strapi Admin:
    ```bash
    docker run --rm caddy:latest caddy hash-password --plaintext "your_secret_password"
    ```
    Copy the generated bcrypt hash and set `BASIC_AUTH_HASH` in `.env`.
-4. **Live Access Logging for Observability**:
-   Caddy logs all requests in structured JSON format to `/var/log/caddy/access.log`, which is streamed by Vector into OpenObserve (`caddy_access` stream) for real-time traffic, latency, and error debugging.
+4. **Live Access Logging**:
+   Caddy logs all incoming requests in structured JSON format to `/var/log/caddy/access.log` with automatic log rotation (50MB rolls, 30 days retention).
 5. **Start Caddy**:
    ```bash
    docker compose up -d caddy
@@ -415,21 +429,38 @@ docker compose up -d storefront
 
 ---
 
-### 16. Phase 10: Observability & Monitoring (OpenObserve)
+### 16. Phase 10: Container Management & Monitoring (Portainer)
 
-A lightweight observability stack built on **OpenObserve**, **Vector**, **cAdvisor**, and **docker-stats-exporter**.
+A lightweight container management & visual monitoring dashboard using **Portainer Community Edition (CE)** (~40MB RAM footprint). It replaces heavy monitoring stacks with instant, low-overhead container controls and resource metrics.
 
 ```bash
-docker compose up -d openobserve vector cadvisor docker-stats-exporter
+docker compose up -d portainer
+docker compose ps portainer
 ```
 
-- **OpenObserve UI**: Open `https://monitor.yourdomain.com` (or `http://<VM_IP>:5080`).
-- **Streams**:
-  - `docker_logs`: Unified container logs and error search.
-  - `caddy_access`: Live HTTP web traffic, IP addresses, status codes (2xx/4xx/5xx), latencies, and request paths from Caddy.
-  - `docker_stats`: Live memory %, CPU %, and network I/O per container.
-  - `host_metrics`: Server-wide CPU, RAM, and disk metrics.
-- **Telegram Alerts**: In OpenObserve, navigate to **Reliability > Destinations** to attach a Telegram bot webhook (`https://api.telegram.org/bot<TOKEN>/sendMessage`), then create alert rules under **Reliability > Alerts**.
+- **Portainer Dashboard URLs**:
+  - **Direct HTTPS (IP)**: `https://<YOUR_VPS_IP>:9443`
+  - **Profile B**: `https://portainer.local` (or `https://monitor.local`)
+  - **Profile C**: `https://portainer.yourdomain.com` (or `https://monitor.yourdomain.com`)
+
+> [!IMPORTANT]
+> **5-Minute Initial Admin Setup Window**:  
+> For security, Portainer disables its initialization endpoint if the first administrator account is not created within 5 minutes of container startup.  
+> Immediately open the dashboard URL in your browser upon starting the container, set your username (`admin`) and a password (minimum 12 characters), and click **Create user**.  
+> *If you exceed the 5-minute window before creating the account, restart the container to reset the timer:*
+> ```bash
+> docker compose restart portainer
+> ```
+
+- **Connecting to Docker Environment**:
+  - In the Portainer welcome screen, click **Get Started** to connect to the local Docker socket (`/var/run/docker.sock`).
+  - You will see the entire Loomix stack in the **Containers** view.
+- **Key Features in Portainer**:
+  - **Container Controls**: Start, Stop, Kill, Restart, or Recreate any container with 1 click.
+  - **Live Resource Metrics**: Click the **Stats** icon next to any container for real-time CPU %, Memory usage, Network traffic, and process list.
+  - **Live Logs**: Click the **Logs** icon to inspect or stream logs with search filtering and line count settings.
+  - **Web Console / Shell**: Click the **Console** icon (`_>`) to launch an interactive bash/sh terminal directly in your browser without needing SSH.
+  - **Volume & Network Inspection**: Monitor persistent volumes and clean unused Docker images or caches safely.
 
 ---
 
@@ -469,7 +500,7 @@ Pushing to `main` automatically triggers the Storefront CI/CD workflow and self-
 | Medusa API | 9000 | `0.0.0.0:9000` | Public |
 | Strapi CMS | 1337 | `0.0.0.0:1337` | Public |
 | Umami | 3000 | `0.0.0.0:3005` | Public |
-| OpenObserve | 5080 | `127.0.0.1:5080` | Local / Proxy |
+| Portainer CE | 9443 | `0.0.0.0:9443` | Public (HTTPS) |
 | Meilisearch | 7700 | `127.0.0.1:7700` | Internal Only |
 | Postgres | 5432 | `127.0.0.1:5432` | Internal Only |
 | Redis | 6379 | `127.0.0.1:6379` | Internal Only |
