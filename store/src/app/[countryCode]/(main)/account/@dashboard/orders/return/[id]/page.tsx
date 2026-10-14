@@ -48,7 +48,7 @@ async function ReturnRequestContent(props: Props) {
   }
 
   const [shippingOptions, returnReasons] = await Promise.all([
-    listReturnShippingOptions((order as any).cart.id),
+    listReturnShippingOptions((order as any).cart?.id || ""),
     listReturnReasons(),
   ])
 

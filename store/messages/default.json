@@ -527,8 +527,10 @@
       "note_optional": "Note (Optional)",
       "note_placeholder": "Describe the return context",
       "submit_request": "Submit Request",
+      "return_request_failed": "Failed to submit return request. Please try again.",
       "cancel": "Cancel"
     },
+    "return_request_failed": "Failed to submit return request. Please try again.",
     "details": {
       "placed": "Placed",
       "paid": "Paid",

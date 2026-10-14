@@ -7,7 +7,7 @@ import { factories } from '@strapi/strapi';
 export default factories.createCoreController('api::homepage.homepage', ({ strapi }) => ({
     async find(ctx) {
         // Read locale from query param (e.g. ?locale=ar or ?locale=en)
-        const locale = (ctx.query?.locale as string) || 'en';
+        const locale = (ctx.query?.locale as string) || process.env.DEFAULT_LOCALE || 'en-US';
         // Read status — 'draft' for Strapi Preview, 'published' for public frontend (default)
         const status = (ctx.query?.status as 'draft' | 'published') === 'draft' ? 'draft' : 'published';
         console.log(status, 'status')

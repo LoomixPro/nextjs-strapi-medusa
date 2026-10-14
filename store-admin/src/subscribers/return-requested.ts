@@ -3,6 +3,7 @@ import {
   type SubscriberArgs,
 } from "@medusajs/framework"
 import { resolveOrderLocale, type SupportedLocale } from "../utils/resolve-locale"
+import { escapeHtml } from "../utils/escape-html"
 import { Modules } from "@medusajs/framework/utils"
 
 const locales: Record<SupportedLocale, any> = {
@@ -92,17 +93,19 @@ export default async function returnRequestedHandler({
 
     const phone = order.shipping_address?.phone || order.customer?.phone || ""
     const fullName = `${order.shipping_address?.first_name || ""} ${order.shipping_address?.last_name || ""}`.trim() || t.dearCustomer
+    const safeFullName = escapeHtml(fullName)
+    const safeDisplayId = escapeHtml(order.display_id)
 
     logger.info(`[DEBUG] order.email: ${order.email}`)
     logger.info(`[DEBUG] order.customer.email: ${order.customer?.email}`)
 
     // 1. Prepare Email Notification Content
-    const emailSubject = t.emailSubject(order.display_id)
+    const emailSubject = t.emailSubject(safeDisplayId)
     const emailHtml = `
       <div style="direction: ${t.dir}; font-family: Tahoma, Arial, sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; line-height: 1.6;">
         <h2 style="color: #0288d1; text-align: center;">${t.emailTitle}</h2>
-        <p>${t.emailGreeting(fullName)}</p>
-        <p>${t.emailDesc(order.display_id)}</p>
+        <p>${t.emailGreeting(safeFullName)}</p>
+        <p>${t.emailDesc(safeDisplayId)}</p>
         
         <div style="background-color: #e1f5fe; padding: 15px; border-radius: 4px; border-${t.dir === 'rtl' ? 'right' : 'left'}: 4px solid #0288d1; margin: 20px 0;">
           <p style="margin: 0; font-size: 14px; color: #01579b;"><strong>${t.statusTitle}</strong> ${t.statusDesc}</p>

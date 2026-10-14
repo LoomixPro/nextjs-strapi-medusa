@@ -8,6 +8,7 @@ import { Button } from "@modules/common/components/shadcn/button"
 import { Badge } from "@modules/common/components/shadcn/badge"
 import { listReturnReasons, createReturnRequest } from "@lib/data/orders"
 import Thumbnail from "@modules/products/components/thumbnail"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 interface ReturnRequestProps {
   order: HttpTypes.StoreOrder
@@ -163,16 +164,10 @@ const ReturnRequest = ({ order }: ReturnRequestProps) => {
     )
     setIsLoading(false)
 
-    if (res.success) {
+    if (res?.success) {
       setIsSuccess(true)
     } else {
-      // If server does not have the endpoint, we simulate success for demo client-side
-      // to keep it functional even if mock backend doesn't support the POST endpoint.
-      console.warn(
-        "Returns request API endpoint failed, falling back to simulated success:",
-        res.error
-      )
-      setIsSuccess(true)
+      setError(res?.error || t("return_request_failed"))
     }
   }
 
@@ -227,10 +222,12 @@ const ReturnRequest = ({ order }: ReturnRequestProps) => {
         <div className="mt-4">
           {!isExpanded ? (
             <Button
-              onClick={() => setIsExpanded(true)}
+              asChild
               className="bg-muted/50 hover:bg-primary/10 text-foreground hover:text-primary rounded-2xl text-[10px] font-bold h-10 px-5 border-none shadow-xs transition-all w-max flex items-center gap-1.5"
             >
-              {t("return_request.start_return_request")}
+              <LocalizedClientLink href={`/account/orders/return/${order.id}`}>
+                {t("return_request.start_return_request")}
+              </LocalizedClientLink>
             </Button>
           ) : isSuccess ? (
             <div className="mt-4 p-6 bg-emerald-50/50 dark:bg-emerald-950/15 border border-emerald-100/50 dark:border-emerald-900/30 rounded-2xl flex flex-col items-center text-center gap-3">

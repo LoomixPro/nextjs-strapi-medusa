@@ -144,6 +144,9 @@ Pick a profile before running any phase. Public URLs are baked into Strapi, Medu
 #### Profile A — Quick LAN (HTTP + IP)
 For smoke tests only. Replace `192.168.1.103` with your server IP (`ip a` on Linux):
 ```env
+# Required for Profile A: allow Docker to bind service ports to all interfaces (0.0.0.0) without Caddy:
+BIND_IP=0.0.0.0
+
 STOREFRONT_PUBLIC_URL=http://192.168.1.103:8000
 MEDUSA_BACKEND_PUBLIC_URL=http://192.168.1.103:9000
 STRAPI_PUBLIC_URL=http://192.168.1.103:1337
@@ -493,17 +496,19 @@ Pushing to `main` automatically triggers the Storefront CI/CD workflow and self-
 
 ### 7. Network Architecture & Port Reference
 
-#### Direct Port Access (Debugging / Profile A)
-| Service | Container Port | Host Port Binding | Access |
-|---|---|---|---|
-| Storefront | 8000 | `0.0.0.0:8000` | Public |
-| Medusa API | 9000 | `0.0.0.0:9000` | Public |
-| Strapi CMS | 1337 | `0.0.0.0:1337` | Public |
-| Umami | 3000 | `0.0.0.0:3005` | Public |
-| Portainer CE | 9443 | `0.0.0.0:9443` | Public (HTTPS) |
-| Meilisearch | 7700 | `127.0.0.1:7700` | Internal Only |
-| Postgres | 5432 | `127.0.0.1:5432` | Internal Only |
-| Redis | 6379 | `127.0.0.1:6379` | Internal Only |
+#### Direct Port Access (Debugging / Profile A with BIND_IP=0.0.0.0)
+| Service | Container Port | Host Port Binding (Default) | With `BIND_IP=0.0.0.0` (Profile A) | Access (Default) |
+|---|---|---|---|---|
+| Storefront | 8000 | `127.0.0.1:8000` | `0.0.0.0:8000` | Via Caddy only |
+| Medusa API | 9000 | `127.0.0.1:9000` | `0.0.0.0:9000` | Via Caddy only |
+| Strapi CMS | 1337 | `127.0.0.1:1337` | `0.0.0.0:1337` | Via Caddy only |
+| MinIO API | 9000 | `127.0.0.1:9001` | `0.0.0.0:9001` | Via Caddy only |
+| MinIO Console | 9001 | `127.0.0.1:9002` | `0.0.0.0:9002` | Via Caddy only |
+| Umami | 3000 | `127.0.0.1:3005` | `0.0.0.0:3005` | Via Caddy only |
+| Portainer CE | 9443 | `127.0.0.1:9443` | `0.0.0.0:9443` | Via Caddy only |
+| Meilisearch | 7700 | `127.0.0.1:7700` | `127.0.0.1:7700` | Internal Only |
+| Postgres | 5432 | `127.0.0.1:5432` | `127.0.0.1:5432` | Internal Only |
+| Redis | 6379 | `127.0.0.1:6379` | `127.0.0.1:6379` | Internal Only |
 
 ---
 

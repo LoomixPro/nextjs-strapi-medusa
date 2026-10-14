@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       body.model &&
       body.entry
     ) {
-      const locale = body.entry.locale || "en" // Default fallback locale
+      const locale = body.entry.locale || process.env.DEFAULT_LOCALE || "en-US" // Default fallback locale
       // Map Strapi model names to our Next.js cache tags
       const modelToTagMap: Record<string, string> = {
         "about-page": "about",

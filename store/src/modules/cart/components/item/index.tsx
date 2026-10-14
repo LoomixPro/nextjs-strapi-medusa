@@ -98,9 +98,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
               data-testid="product-select-button"
             >
               {Array.from(
-                {
-                  length: Math.min(maxQuantity, 10),
-                },
+                { length: Math.max(Math.min(maxQuantity, 10), item.quantity) },
                 (_, i) => (
                   <option value={i + 1} key={i}>
                     {i + 1}

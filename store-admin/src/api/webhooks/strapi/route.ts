@@ -1,9 +1,29 @@
+import crypto from "crypto"
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { simpleHash, Modules } from "@medusajs/framework/utils"
 import { 
   handleStrapiWebhookWorkflow, 
   WorkflowInput,
 } from "../../../workflows/handle-strapi-webhook"
+
+function safeCompareSecret(provided?: string | null, expected?: string | null): boolean {
+  if (!provided || !expected) {
+    return false
+  }
+
+  const actual = new Uint8Array(
+    crypto.createHash("sha256").update(provided).digest()
+  )
+  const expectedHash = new Uint8Array(
+    crypto.createHash("sha256").update(expected).digest()
+  )
+
+  if (actual.length !== expectedHash.length) {
+    return false
+  }
+
+  return crypto.timingSafeEqual(actual, expectedHash)
+}
 
 export const POST = async (
   req: MedusaRequest,
@@ -13,7 +33,7 @@ export const POST = async (
   const logger = req.scope.resolve("logger")
   const cachingService = req.scope.resolve(Modules.CACHE)
 
-  // Validate webhook secret if configured
+  const isDev = process.env.NODE_ENV !== "production"
   const expectedSecret =
     process.env.INTERNAL_API_SECRET || process.env.STRAPI_WEBHOOK_SECRET
   const providedSecret =
@@ -23,7 +43,13 @@ export const POST = async (
       ? req.headers.authorization.slice(7)
       : undefined)
 
-  if (expectedSecret && providedSecret !== expectedSecret) {
+  if (!isDev && (!expectedSecret || !safeCompareSecret(providedSecret, expectedSecret))) {
+    logger.warn(`Unauthorized Strapi webhook attempt: invalid or missing secret`)
+    res.status(401).json({ message: "Unauthorized: Invalid webhook secret" })
+    return
+  }
+
+  if (isDev && expectedSecret && !safeCompareSecret(providedSecret, expectedSecret)) {
     logger.warn(`Unauthorized Strapi webhook attempt: invalid secret`)
     res.status(401).json({ message: "Unauthorized: Invalid webhook secret" })
     return

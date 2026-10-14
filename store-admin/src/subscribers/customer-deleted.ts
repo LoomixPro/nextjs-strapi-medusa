@@ -18,11 +18,21 @@ export default async function handleCustomerDeleted({
         logger.info(`[customer-deleted] Customer ${customerId} deleted. Cleaning up linked AuthIdentities...`)
 
         // List all auth identities and find those linked to this customer
-        const identities = await authModuleService.listAuthIdentities({})
+        let linkedIdentities: any[] = []
+        try {
+            linkedIdentities = await authModuleService.listAuthIdentities({
+                app_metadata: { customer_id: customerId }
+            })
+        } catch {
+            // fallback if direct app_metadata filtering is not supported by driver
+        }
 
-        const linkedIdentities = identities.filter(
-            (identity: any) => identity.app_metadata?.customer_id === customerId
-        )
+        if (!linkedIdentities || linkedIdentities.length === 0) {
+            const identities = await authModuleService.listAuthIdentities({})
+            linkedIdentities = identities.filter(
+                (identity: any) => identity.app_metadata?.customer_id === customerId
+            )
+        }
 
         if (linkedIdentities.length === 0) {
             logger.info(`[customer-deleted] No linked AuthIdentities found for customer ${customerId}`)

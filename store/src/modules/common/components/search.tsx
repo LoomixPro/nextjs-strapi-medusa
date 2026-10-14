@@ -7,6 +7,7 @@ import type React from "react"
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import { createPortal } from "react-dom"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import {
   Configure,
   Highlight,
@@ -292,27 +293,34 @@ const HitsList = memo(function HitsList({
         const hasImage = Boolean(imageUrl)
         const isImageFailed = failedImages[hit.objectID] || !hasImage
         const primaryVal = getByPath<string>(hit, mapping.primaryText)
-        return (
-          <a
-            key={hit.objectID}
-            href={url ?? "#"}
-            target={openResultsInNewTab && url ? "_blank" : undefined}
-            rel={openResultsInNewTab && url ? "noopener noreferrer" : undefined}
-            className="flex flex-row items-center gap-4 cursor-pointer text-decoration-none text-foreground bg-background rounded-sm p-4 aria-selected:bg-blue-50 dark:aria-selected:bg-slate-900 animate-in fade-in-0 zoom-in-95"
-            role="option"
-            aria-selected={isSel}
-            onClick={() => {
-              sendEvent?.("click", hit, "Hit Clicked")
-            }}
-            onMouseEnter={() => {
-              if (!hoverEnabled) return
-              onHoverIndex?.(idx)
-            }}
-            onMouseMove={() => {
-              if (!hoverEnabled) return
-              onHoverIndex?.(idx)
-            }}
-          >
+        const isInternal =
+          typeof url === "string" &&
+          url.startsWith("/") &&
+          !url.startsWith("//")
+
+        const linkProps = {
+          key: hit.objectID,
+          target: openResultsInNewTab && url ? "_blank" : undefined,
+          rel: openResultsInNewTab && url ? "noopener noreferrer" : undefined,
+          className:
+            "flex flex-row items-center gap-4 cursor-pointer text-decoration-none text-foreground bg-background rounded-sm p-4 aria-selected:bg-blue-50 dark:aria-selected:bg-slate-900 animate-in fade-in-0 zoom-in-95",
+          role: "option",
+          "aria-selected": isSel,
+          onClick: () => {
+            sendEvent?.("click", hit, "Hit Clicked")
+          },
+          onMouseEnter: () => {
+            if (!hoverEnabled) return
+            onHoverIndex?.(idx)
+          },
+          onMouseMove: () => {
+            if (!hoverEnabled) return
+            onHoverIndex?.(idx)
+          },
+        }
+
+        const linkContent = (
+          <>
             {hasImage ? (
               <div className="w-[100px] h-[100px] self-start flex-[0_0_100px] items-center justify-center overflow-hidden rounded-sm bg-muted relative">
                 {!isImageFailed ? (
@@ -357,6 +365,16 @@ const HitsList = memo(function HitsList({
                 </p>
               ) : null}
             </div>
+          </>
+        )
+
+        return isInternal ? (
+          <LocalizedClientLink href={url} {...linkProps}>
+            {linkContent}
+          </LocalizedClientLink>
+        ) : (
+          <a href={url ?? "#"} {...linkProps}>
+            {linkContent}
           </a>
         )
       })}

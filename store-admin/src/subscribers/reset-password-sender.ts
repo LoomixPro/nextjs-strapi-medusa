@@ -3,6 +3,7 @@ import {
     type SubscriberConfig,
 } from "@medusajs/framework"
 import { resolveLocale, type SupportedLocale, DEFAULT_LOCALE } from "../utils/resolve-locale"
+import { escapeHtml } from "../utils/escape-html"
 import { Modules } from "@medusajs/framework/utils"
 
 // Event payload emitted by Medusa when a password reset is requested
@@ -78,6 +79,7 @@ export default async function handleResetPassword({
         const lang = resolveLocale(cachedLocale || defaultLang)
         const t = locales[lang] || locales["en-US"]
 
+        const safeResetUrl = escapeHtml(resetUrl)
         const emailHtml = `
             <div style="direction: ${t.dir}; font-family: Tahoma, Arial, sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px; max-width: 600px; margin: 0 auto; background-color: #f9f9f9;">
                 <h2 style="color: #333; text-align: center;">${t.title}</h2>
@@ -85,7 +87,7 @@ export default async function handleResetPassword({
                     ${t.desc}
                 </p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="${resetUrl}"
+                    <a href="${safeResetUrl}"
                        style="display: inline-block; background-color: #4f46e5; color: #fff; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: bold; text-decoration: none;">
                         ${t.button}
                     </a>
@@ -96,7 +98,7 @@ export default async function handleResetPassword({
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 24px 0;" />
                 <p style="font-size: 12px; color: #bbb; text-align: center;">
                     ${t.trouble}<br/>
-                    <a href="${resetUrl}" style="color: #4f46e5; word-break: break-all;">${resetUrl}</a>
+                    <a href="${safeResetUrl}" style="color: #4f46e5; word-break: break-all;">${safeResetUrl}</a>
                 </p>
             </div>
         `

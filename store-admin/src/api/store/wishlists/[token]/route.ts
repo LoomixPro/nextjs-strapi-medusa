@@ -1,6 +1,6 @@
 import { MedusaResponse, MedusaStoreRequest } from "@medusajs/framework"
 import { MedusaError } from "@medusajs/framework/utils"
-import { decode, JwtPayload } from "jsonwebtoken"
+import jwt, { JwtPayload } from "jsonwebtoken"
 
 export async function GET(
     req: MedusaStoreRequest,
@@ -13,12 +13,25 @@ export async function GET(
         )
     }
 
-    const decodedToken = decode(req.params.token) as JwtPayload
+    const { http } = req.scope.resolve("configModule").projectConfig
+    if (!http.jwtSecret) {
+        throw new MedusaError(
+            MedusaError.Types.UNEXPECTED_STATE,
+            "JWT secret is not configured"
+        )
+    }
 
-    if (!decodedToken.wishlist_id) {
+    let decodedToken: JwtPayload
+    try {
+        const decoded = jwt.verify(req.params.token, http.jwtSecret)
+        if (typeof decoded !== "object" || !decoded || !decoded.wishlist_id) {
+            throw new Error("Invalid payload")
+        }
+        decodedToken = decoded as JwtPayload
+    } catch {
         throw new MedusaError(
             MedusaError.Types.INVALID_DATA,
-            "Invalid token"
+            "Invalid or expired wishlist token"
         )
     }
 

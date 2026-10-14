@@ -367,7 +367,10 @@ async function _fetchStorefrontSettings(
     returnDeadlineDays: data?.returnDeadlineDays ?? 7,
     allowIndexing: data?.allowIndexing ?? true,
   }
-  setClientSettings(settings)
+
+  if (typeof window !== "undefined") {
+    setClientSettings(settings)
+  }
   return settings
 }
 

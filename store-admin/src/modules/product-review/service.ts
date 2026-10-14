@@ -16,7 +16,7 @@ class ProductReviewModuleService extends MedusaService({
         const result = await sharedContext?.manager?.execute(
             `SELECT AVG(rating) as average 
       FROM review 
-      WHERE product_id = ? AND status = 'approved'`,
+      WHERE product_id = ? AND status = 'approved' AND deleted_at IS NULL`,
             [productId]
         )
 
@@ -36,7 +36,7 @@ class ProductReviewModuleService extends MedusaService({
         const rows = await sharedContext?.manager?.execute(
             `SELECT product_id, AVG(rating) as average, COUNT(id) as count 
              FROM review 
-             WHERE product_id IN (${placeholders}) AND status = 'approved'
+             WHERE product_id IN (${placeholders}) AND status = 'approved' AND deleted_at IS NULL
              GROUP BY product_id`,
             productIds
         )

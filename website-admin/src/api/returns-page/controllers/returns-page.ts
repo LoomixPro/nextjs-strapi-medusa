@@ -2,7 +2,7 @@ import { factories } from '@strapi/strapi';
 
 export default factories.createCoreController('api::returns-page.returns-page', ({ strapi }) => ({
   async find(ctx) {
-    const locale = (ctx.query?.locale as string) || 'en';
+    const locale = (ctx.query?.locale as string) || process.env.DEFAULT_LOCALE || 'en-US';
     
     const data = await strapi.documents('api::returns-page.returns-page').findFirst({
       locale,

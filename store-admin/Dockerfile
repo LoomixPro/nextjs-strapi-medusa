@@ -11,8 +11,10 @@ WORKDIR /app
 # Copy store-admin package files
 COPY store-admin/package.json store-admin/package-lock.json ./store-admin/
 
+ARG NPM_REGISTRY="https://registry.npmjs.org/"
+
 WORKDIR /app/store-admin
-RUN npm config set registry https://registry.npmmirror.com/ \
+RUN npm config set registry "$NPM_REGISTRY" \
  && npm config set fetch-retry-maxtimeout 600000 -g \
  && npm ci
 

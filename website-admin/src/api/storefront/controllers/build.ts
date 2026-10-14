@@ -36,7 +36,7 @@ export default {
           )
         }
 
-        clearHistory()
+        await clearHistory()
 
         return ctx.send({
           success: true,
@@ -47,7 +47,7 @@ export default {
         })
       }
 
-      const history = getHistory()
+      const history = await getHistory()
       const batch = history.map(h => ({
         action: h.action,
         componentPath: h.componentPath,
@@ -60,7 +60,7 @@ export default {
         batch: batch.length > 0 ? batch : undefined,
       })
 
-      clearHistory()
+      await clearHistory()
 
       return ctx.send({
         success: true,

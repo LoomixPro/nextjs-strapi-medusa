@@ -26,15 +26,28 @@ export default async function ProductInfoStyle2({
   reviewCount = 0,
 }: ProductInfoProps) {
   const t = await getTranslations("Product.info")
+  const inStock = product.variants?.some(
+    (v) =>
+      !v.manage_inventory ||
+      v.allow_backorder ||
+      (v.inventory_quantity ?? 0) > 0
+  )
+
   return (
     <div className="pb-6 border-b border-border/50">
       <h1 className="text-3xl font-extrabold text-foreground leading-snug">
         {product.title}
       </h1>
       <div className="flex items-center mt-3 gap-3">
-        {/* Themed In Stock badge */}
-        <div className="bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded text-xs font-bold">
-          {t("in_stock")}
+        {/* Themed Stock badge */}
+        <div
+          className={
+            inStock
+              ? "bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded text-xs font-bold"
+              : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-xs font-bold"
+          }
+        >
+          {inStock ? t("in_stock") : t("out_of_stock")}
         </div>
         <div className="text-muted-foreground text-xs">
           {t("sku")} {product.variants?.[0]?.sku ?? "-"}

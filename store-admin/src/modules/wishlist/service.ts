@@ -20,9 +20,11 @@ class WishlistModuleService extends MedusaService({
         variantIds: string[],
         @MedusaContext() context: Context<EntityManager> = {}
     ): Promise<number> {
+        if (!variantIds?.length) return 0
         return (await context.manager?.createQueryBuilder("wishlist_item", "wi")
             .select(["wi.wishlist_id"], true)
             .where("wi.product_variant_id IN (?)", [variantIds])
+            .andWhere("wi.deleted_at IS NULL")
             .execute())?.length || 0
     }
 }

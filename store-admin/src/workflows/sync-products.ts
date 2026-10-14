@@ -63,6 +63,28 @@ export const syncProductsWorkflow = createWorkflow(
             const publishedProducts: SyncProductsStepInput["products"] = []
             const unpublishedProductsToDelete: string[] = []
 
+            const defaultRegion = (
+                process.env.DEFAULT_REGION ||
+                process.env.DEFAULT_COUNTRY_CODE ||
+                "us"
+            ).toLowerCase()
+
+            const regionToCurrency: Record<string, string> = {
+                us: "usd",
+                ir: "irr",
+                ae: "aed",
+                eu: "eur",
+                gb: "gbp",
+                de: "eur",
+                fr: "eur",
+            }
+
+            const defaultCurrency = (
+                process.env.DEFAULT_CURRENCY ||
+                regionToCurrency[defaultRegion] ||
+                "usd"
+            ).toLowerCase()
+
             data.products.forEach((product) => {
                 if (product.status === "published") {
                     const { status, options, ...rest } = product
@@ -76,7 +98,23 @@ export const syncProductsWorkflow = createWorkflow(
 
                     const mappedVariants = rest.variants?.map((variant: any) => {
                         const priceSet = variant.price_set
-                        const price = priceSet?.prices?.[0]
+                        const prices: any[] = priceSet?.prices || []
+
+                        // Find price matching default store currency, fallback to first price
+                        const targetPrice = prices.find(
+                            (p: any) => p.currency_code?.toLowerCase() === defaultCurrency
+                        ) || prices[0]
+
+                        // Build structured map of prices by currency
+                        const pricesByCurrency: Record<string, { amount: number; currency_code: string }> = {}
+                        for (const p of prices) {
+                            if (p.currency_code && p.amount !== undefined && p.amount !== null) {
+                                pricesByCurrency[p.currency_code.toLowerCase()] = {
+                                    amount: p.amount,
+                                    currency_code: p.currency_code.toLowerCase(),
+                                }
+                            }
+                        }
 
                         // Calculate true inventory from location levels in Medusa v2
                         let totalStock = 0
@@ -98,14 +136,15 @@ export const syncProductsWorkflow = createWorkflow(
                         return {
                             ...variant,
                             inventory_quantity: synthesizedQuantity,
-                            calculated_price: price ? {
-                                calculated_amount: price.amount,
-                                original_amount: price.amount, // Assuming no discounts for now
-                                currency_code: price.currency_code,
+                            calculated_price: targetPrice ? {
+                                calculated_amount: targetPrice.amount,
+                                original_amount: targetPrice.amount, // Assuming no discounts for now
+                                currency_code: targetPrice.currency_code?.toLowerCase(),
                                 calculated_price: {
                                     price_list_type: "default"
                                 }
                             } : null,
+                            prices_by_currency: pricesByCurrency,
                         }
                     })
 
@@ -130,10 +169,23 @@ export const syncProductsWorkflow = createWorkflow(
 
                     const uniqueColorFacets = [...new Set(colorFacets)]
 
+                    // Aggregate minimum price per currency across variants for product-level filtering
+                    const productPricesByCurrency: Record<string, number> = {}
+                    for (const v of mappedVariants || []) {
+                        if (v.prices_by_currency) {
+                            for (const [curr, p] of Object.entries(v.prices_by_currency as Record<string, { amount: number }>)) {
+                                if (productPricesByCurrency[curr] === undefined || p.amount < productPricesByCurrency[curr]) {
+                                    productPricesByCurrency[curr] = p.amount
+                                }
+                            }
+                        }
+                    }
+
                     publishedProducts.push({
                         ...rest,
                         options: mappedOptions,
                         variants: mappedVariants,
+                        prices_by_currency: productPricesByCurrency,
                         color_facets: uniqueColorFacets.length > 0 ? uniqueColorFacets : undefined
                     } as unknown as SyncProductsStepInput["products"][0])
                 } else {

@@ -14,7 +14,6 @@
     "build": "node scripts/generate-style-registries.js && next build",
     "sync:translations": "node ../scripts/sync-translations.js",
     "sync:settings": "node ../scripts/sync-settings.js",
-    "postbuild": "next-sitemap",
     "start": "next start -p 8000",
     "lint": "eslint .",
     "format": "prettier --write .",

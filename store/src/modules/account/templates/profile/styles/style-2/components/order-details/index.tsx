@@ -10,6 +10,7 @@ import Items from "@modules/order/components/items"
 import OrderDetails from "@modules/order/components/order-details"
 import OrderSummary from "@modules/order/components/order-summary"
 import ShippingDetails from "@modules/order/components/shipping-details"
+import PaymentDetails from "@modules/order/components/payment-details"
 import React from "react"
 import {
   hasReturnableItems,
@@ -106,6 +107,10 @@ const OrderDetailsStyle2: React.FC<OrderDetailsTemplateProps> = ({
 
           <div className="bg-background rounded-3xl p-6 sm:p-8 shadow-sm border border-border">
             <ShippingDetails order={order} />
+          </div>
+
+          <div className="bg-background rounded-3xl p-6 sm:p-8 shadow-sm border border-border">
+            <PaymentDetails order={order} />
           </div>
 
           <div className="bg-muted rounded-3xl p-6 sm:p-8 border border-border">

@@ -1,42 +1,5 @@
 import { type SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
 import StrapiModuleService, { Collection } from "../modules/strapi/service"
-import { createCollectionsWorkflow, updateCollectionsWorkflow, deleteCollectionsWorkflow } from "@medusajs/core-flows"
-
-// Hook into create
-createCollectionsWorkflow.hooks.collectionsCreated(
-    async ({ collections }, { container }) => {
-        for (const collection of collections) {
-            await collectionSync({
-                event: { name: "product-collection.created", data: { id: collection.id } },
-                container
-            } as any)
-        }
-    }
-)
-
-// Hook into update
-updateCollectionsWorkflow.hooks.collectionsUpdated(
-    async ({ collections }, { container }) => {
-        for (const collection of collections) {
-            await collectionSync({
-                event: { name: "product-collection.updated", data: { id: collection.id } },
-                container
-            } as any)
-        }
-    }
-)
-
-// Hook into delete
-deleteCollectionsWorkflow.hooks.collectionsDeleted(
-    async ({ ids }, { container }) => {
-        for (const id of ids) {
-            await collectionSync({
-                event: { name: "product-collection.deleted", data: { id } },
-                container
-            } as any)
-        }
-    }
-)
 
 export default async function collectionSync({
     event,
@@ -95,10 +58,22 @@ export default async function collectionSync({
             baseLocale = updated.data?.locale
             logger.info(`Updated collection ${collection.id} in Strapi`)
         } else {
-            const created = await strapiService.create(Collection.COLLECTIONS, strapiData)
-            documentId = created.data?.documentId
-            baseLocale = created.data?.locale
-            logger.info(`Created collection ${collection.id} in Strapi`)
+            try {
+                const created = await strapiService.create(Collection.COLLECTIONS, strapiData)
+                documentId = created.data?.documentId
+                baseLocale = created.data?.locale
+                logger.info(`Created collection ${collection.id} in Strapi`)
+            } catch (createError) {
+                const retryExisting = await strapiService.findByMedusaId(Collection.COLLECTIONS, collection.id)
+                if (retryExisting) {
+                    const updated = await strapiService.update(Collection.COLLECTIONS, retryExisting.documentId, strapiData)
+                    documentId = updated.data?.documentId
+                    baseLocale = updated.data?.locale
+                    logger.info(`Updated collection ${collection.id} in Strapi (after create conflict)`)
+                } else {
+                    throw createError
+                }
+            }
         }
 
         if (documentId) {

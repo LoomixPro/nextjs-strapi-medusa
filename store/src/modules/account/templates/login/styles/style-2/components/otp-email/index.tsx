@@ -91,6 +91,15 @@ export const EmailOtp = ({ email, onChangeEmail }: Props) => {
   const searchParams = useSearchParams()
   const redirectUrl = searchParams.get("redirect")
 
+  // Only allow relative internal paths — reject absolute/protocol-relative URLs
+  const safeRedirectUrl = (url: string | null): string => {
+    if (!url || typeof url !== "string") return "/account"
+    const trimmed = url.trim()
+    return trimmed.startsWith("/") && !trimmed.startsWith("//")
+      ? trimmed
+      : "/account"
+  }
+
   const handleVerify = async () => {
     if (!otp) return
     setIsLoading(true)
@@ -102,7 +111,7 @@ export const EmailOtp = ({ email, onChangeEmail }: Props) => {
 
     if (result.success) {
       // Redirect to account page (or the original destination) after successful verification
-      router.push(redirectUrl || "/account")
+      router.push(safeRedirectUrl(redirectUrl))
     } else {
       setError(mapError(result.error))
       setIsLoading(false)

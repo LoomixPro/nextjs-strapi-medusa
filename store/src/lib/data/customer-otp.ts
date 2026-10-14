@@ -1,6 +1,6 @@
 "use server"
 
-import { sdk, MEDUSA_BACKEND_URL } from "@lib/config"
+import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
 import { getAuthHeaders, getCacheTag, setAuthToken } from "./cookies"
@@ -143,23 +143,28 @@ export async function verifyEmailLoginOtp({
       })
       .catch(() => ({ customer: null }))
 
-    // If no customer record yet, it means registration failed previously.
-    // We shouldn't create it here because the token will be stale.
     if (!customer) {
+      // No customer record — auto-create customer record with current auth token
       try {
-        await fetch(`${MEDUSA_BACKEND_URL}/store/auth-identity/cleanup`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-            "x-publishable-api-key":
-              process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+        const emailName =
+          email.split("@")[0]?.replace(/[^a-zA-Z0-9]/g, "") || "User"
+        const username = `user_${crypto.randomUUID().slice(0, 8)}`
+        const createResult = await sdk.store.customer.create(
+          {
+            email,
+            first_name: emailName,
+            last_name: "",
+            metadata: {
+              login_method: "email-otp",
+              username,
+            },
           },
-          body: JSON.stringify({ entity_id: email }),
-        })
-        return { success: false, error: "error:auth_cleanup_refreshed" }
-      } catch (cleanupErr) {
-        authLog("verifyEmailLoginOtp: cleanup failed", cleanupErr)
+          {},
+          headers
+        )
+        customer = createResult.customer ?? null
+      } catch (createErr) {
+        authLog("verifyEmailLoginOtp: auto-create customer failed", createErr)
         return { success: false, error: "error:account_setup_failed" }
       }
     } else if (!customer.metadata?.username) {
@@ -343,28 +348,8 @@ export const verifyOtp = async ({
         )
         customer = createResult.customer ?? null
       } catch (createErr: any) {
-        // Customer creation can fail with "customer_id already exists in app_metadata"
-        // when the customer was deleted from the dashboard but their AuthIdentity
-        // was not cleaned up. We call the cleanup endpoint to delete the stale identity.
-        authLog("verifyOtp: auto-create customer failed (attempt 1)", createErr)
-        try {
-          await fetch(`${MEDUSA_BACKEND_URL}/store/auth-identity/cleanup`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authToken}`,
-              "x-publishable-api-key":
-                process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-            },
-            body: JSON.stringify({ entity_id: phone }),
-          })
-          // Since the old identity was deleted, the current auth token is now invalid.
-          // The user MUST request a new OTP to create a fresh identity.
-          return "error:auth_cleanup_refreshed"
-        } catch (cleanupErr) {
-          authLog("verifyOtp: cleanup failed", cleanupErr)
-          return "error:account_setup_failed"
-        }
+        authLog("verifyOtp: auto-create customer failed", createErr)
+        return "error:account_setup_failed"
       }
     } else if (!customer.metadata?.username) {
       const username = `user_${crypto.randomUUID().slice(0, 8)}`

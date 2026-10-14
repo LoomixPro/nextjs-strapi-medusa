@@ -58,6 +58,8 @@ jobs:
     environment: production
     steps:
       - name: Pull Latest Storefront Image and Restart
+        env:
+          TARGET_DIR_SECRET: ${{ secrets.DEPLOY_PATH }}
         run: |
           set -euo pipefail
           
@@ -65,7 +67,7 @@ jobs:
           if [ -f ~/.env ]; then source ~/.env || true; fi
           
           # Navigate to the explicit DEPLOY_PATH
-          TARGET_DIR="${{ secrets.DEPLOY_PATH }}"
+          TARGET_DIR="$TARGET_DIR_SECRET"
           cd "${TARGET_DIR:-$DEPLOY_PATH}"
           
           echo "Pulling the latest storefront image..."

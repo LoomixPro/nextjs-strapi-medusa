@@ -194,7 +194,10 @@ export const useProductActions = ({
     return (selectedVariant?.inventory_quantity || 0) > 0
   }, [selectedVariant])
 
-  const maxStock = selectedVariant?.inventory_quantity || 10
+  const maxStock =
+    selectedVariant?.manage_inventory && !selectedVariant?.allow_backorder
+      ? Math.max(selectedVariant?.inventory_quantity ?? 0, 1)
+      : 10
 
   /**
    * Adds the currently selected variant to the cart with the specified quantity.

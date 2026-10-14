@@ -22,6 +22,10 @@ export const updateProductInStrapiStep = createStep(
         // Fetch current Strapi product data for compensation
         const originalProduct = await strapiService.findByMedusaId(Collection.PRODUCTS, product.id)
 
+        if (!originalProduct) {
+            return new StepResponse(null, null)
+        }
+
         const updateData = {
             title: product.title,
             subtitle: product.subtitle,
@@ -59,40 +63,40 @@ export const updateProductInStrapiStep = createStep(
             originalProduct
         )
     },
-    async (compensationData, { container }) => {
-        if (!compensationData) {
+    async (originalProduct: any, { container }) => {
+        if (!originalProduct) {
             return
         }
 
         const strapiService: StrapiModuleService = container.resolve(STRAPI_MODULE)
 
         const compensationPayload = {
-            title: compensationData.title,
-            subtitle: compensationData.subtitle,
-            description: compensationData.description,
-            // handle: compensationData.handle,
-            // images: compensationData.images,
-            // thumbnail: compensationData.thumbnail,
+            title: originalProduct.title,
+            subtitle: originalProduct.subtitle,
+            description: originalProduct.description,
+            // handle: originalProduct.handle,
+            // images: originalProduct.images,
+            // thumbnail: originalProduct.thumbnail,
         }
 
-        await strapiService.update(Collection.PRODUCTS, compensationData.documentId, compensationPayload)
+        await strapiService.update(Collection.PRODUCTS, originalProduct.documentId, compensationPayload)
         
         try {
             const locales = await strapiService.getLocales()
-            const updatedLocale = compensationData.locale
+            const updatedLocale = originalProduct.locale
 
             for (const locale of locales) {
-                if (locale.code && locale.code !== updatedLocale && compensationData.documentId) {
+                if (locale.code && locale.code !== updatedLocale && originalProduct.documentId) {
                     await strapiService.update(
                         Collection.PRODUCTS,
-                        compensationData.documentId,
+                        originalProduct.documentId,
                         compensationPayload,
                         { locale: locale.code }
                     )
                 }
             }
         } catch (e) {
-            strapiService.logger.warn(`Failed to rollback product localizations for ${compensationData.medusaId}: ${e}`)
+            strapiService.logger.warn(`Failed to rollback product localizations for ${originalProduct.medusaId}: ${e}`)
         }
     }
 )

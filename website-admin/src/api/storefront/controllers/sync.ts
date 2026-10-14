@@ -73,12 +73,12 @@ export default {
       }
 
       // Production mode: queue the component sync
-      const history = getHistory()
+      const history = await getHistory()
       const existingItem = history.find(i => i.componentPath === componentPath)
       
       if (existingItem) {
         if (existingItem.action !== normalizedAction) {
-          removeHistoryItem(existingItem.id)
+          await removeHistoryItem(existingItem.id)
           return ctx.send({
             success: true,
             mode: "production-queue",
@@ -96,7 +96,7 @@ export default {
         })
       }
 
-      addHistoryItem({
+      await addHistoryItem({
         action: normalizedAction,
         componentPath,
       })
@@ -338,7 +338,7 @@ export default {
       if (!(await isDeployAuthorized(ctx))) {
         return ctx.unauthorized("Unauthorized request.")
       }
-      return ctx.send({ success: true, history: getHistory() })
+      return ctx.send({ success: true, history: await getHistory() })
     } catch (err: any) {
       console.error("[Strapi History Exception]:", err)
       return ctx.internalServerError(err.message || "Error fetching history")
@@ -354,7 +354,7 @@ export default {
       const { id } = ctx.request.body as { id?: string }
       if (!id) return ctx.badRequest("id is required")
 
-      const history = getHistory()
+      const history = await getHistory()
       const item = history.find(i => i.id === id)
       
       if (!item) {
@@ -366,7 +366,7 @@ export default {
       if (process.env.NODE_ENV !== "production") {
         return ctx.badRequest("Undo is not supported in local development mode, as changes are applied immediately.")
       } else {
-        removeHistoryItem(id)
+        await removeHistoryItem(id)
         return ctx.send({
           success: true,
           message: `Removed '${item.action} ${item.componentPath}' from pending queue.`,

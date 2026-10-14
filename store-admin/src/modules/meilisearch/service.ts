@@ -49,9 +49,11 @@ export default class MeilisearchModuleService {
                     "tags.value",
                     "collection_id",
                     "variants.calculated_price.calculated_amount",
+                    "variants.calculated_price.currency_code",
                     "options.value",
                     "variants.inventory_quantity",
                     "color_facets",
+                    "prices_by_currency",
                 ],
                 sortableAttributes: [
                     "created_at",

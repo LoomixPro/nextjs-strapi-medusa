@@ -26,6 +26,7 @@ import { useTranslations } from "next-intl"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { BlocksRenderer } from "@strapi/blocks-react-renderer"
 import Modal from "@modules/common/components/modal"
+import { getMediaUrl } from "@lib/util/strapi-media"
 import {
   SizeGuidePageBlock,
   SizeGuideHeroBlock,
@@ -37,8 +38,8 @@ import {
 } from "@lib/data/strapi-pages"
 
 const STRAPI_URL =
-  process.env.STRAPI_URL ||
   process.env.NEXT_PUBLIC_STRAPI_URL ||
+  process.env.STRAPI_URL ||
   "http://localhost:1337"
 
 export default function SizeGuideBlocks({
@@ -279,14 +280,18 @@ function MeasurementBlock({
             <div
               onClick={() =>
                 onZoom(
-                  `${STRAPI_URL}/body_measurement_guide.png`,
+                  getMediaUrl("/body_measurement_guide.png") ||
+                    `${STRAPI_URL}/body_measurement_guide.png`,
                   block.visual_guide_title
                 )
               }
               className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden border border-border/40 bg-white dark:bg-slate-900 flex items-center justify-center shadow-inner mt-4 group cursor-zoom-in"
             >
               <Image
-                src={`${STRAPI_URL}/body_measurement_guide.png`}
+                src={
+                  getMediaUrl("/body_measurement_guide.png") ||
+                  `${STRAPI_URL}/body_measurement_guide.png`
+                }
                 alt={block.visual_guide_title}
                 className="object-contain p-4 group-hover:scale-[1.03] transition-transform duration-300"
                 fill
@@ -354,11 +359,7 @@ function ChartsBlock({
         <div className="grid md:grid-cols-2 gap-6">
           {activeCatData?.charts?.map((chart) => {
             // Handle image path correctly
-            const imageUrl = chart.image?.url
-              ? chart.image.url.startsWith("http")
-                ? chart.image.url
-                : `${STRAPI_URL}${chart.image.url}`
-              : null
+            const imageUrl = getMediaUrl(chart.image)
 
             return (
               <Card

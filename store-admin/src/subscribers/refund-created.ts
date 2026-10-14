@@ -3,6 +3,8 @@ import {
   type SubscriberArgs,
 } from "@medusajs/framework"
 import { resolveOrderLocale, type SupportedLocale } from "../utils/resolve-locale"
+import { escapeHtml } from "../utils/escape-html"
+import { formatCurrency } from "../utils/format-currency"
 import { Modules } from "@medusajs/framework/utils"
 
 const locales: Record<SupportedLocale, any> = {
@@ -126,28 +128,26 @@ export default async function refundCreatedHandler({
     const refundAmount = latestRefund?.amount ?? payment.amount
 
     // فرمت مبلغ
-    const currencyCode = (payment.currency_code || order.currency_code || "IRR").toUpperCase()
-    const formattedAmount = new Intl.NumberFormat(lang).format(
-        currencyCode === "IRR" ? Math.round(Number(refundAmount) / 10) : Number(refundAmount)
-    )
-
-    const amountLabel = currencyCode === "IRR"
-      ? `${formattedAmount} ${t.currency}`
-      : `${formattedAmount} ${currencyCode}`
+    const formattedRefund = formatCurrency(refundAmount, payment.currency_code || order.currency_code, lang)
+    const formattedAmount = formattedRefund.formattedAmount
+    const amountLabel = formattedRefund.label
 
     const phone = order.shipping_address?.phone || order.customer?.phone || ""
     const fullName = `${order.shipping_address?.first_name || ""} ${order.shipping_address?.last_name || ""}`.trim() || t.dearCustomer
+    const safeFullName = escapeHtml(fullName)
+    const safeDisplayId = escapeHtml(order.display_id)
+    const safeAmountLabel = escapeHtml(amountLabel)
 
     // 1. Email Content
-    const emailSubject = t.emailSubject(order.display_id)
+    const emailSubject = t.emailSubject(safeDisplayId)
     const emailHtml = `
       <div style="direction: ${t.dir}; font-family: Tahoma, Arial, sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; line-height: 1.6;">
         <h2 style="color: #1565c0; text-align: center;">${t.emailTitle}</h2>
-        <p>${t.emailGreeting(fullName)}</p>
-        <p>${t.emailDesc(order.display_id, amountLabel)}</p>
+        <p>${t.emailGreeting(safeFullName)}</p>
+        <p>${t.emailDesc(safeDisplayId, safeAmountLabel)}</p>
 
         <div style="background-color: #e3f2fd; padding: 15px; border-radius: 4px; border-${t.dir === 'rtl' ? 'right' : 'left'}: 4px solid #1565c0; margin: 20px 0;">
-          <p style="margin: 0; font-size: 14px; color: #0d47a1;"><strong>${t.refundTitle}</strong> ${amountLabel}</p>
+          <p style="margin: 0; font-size: 14px; color: #0d47a1;"><strong>${t.refundTitle}</strong> ${safeAmountLabel}</p>
           <p style="margin: 5px 0 0 0; font-size: 14px;">${t.refundDesc}</p>
         </div>
 

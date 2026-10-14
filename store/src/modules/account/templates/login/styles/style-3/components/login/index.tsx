@@ -3,7 +3,7 @@ import { Button } from "@modules/common/components/shadcn/button"
 
 import { useActionState, useState } from "react"
 import { useTranslations } from "next-intl"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useParams } from "next/navigation"
 import Input from "@modules/common/components/input"
 
 import {
@@ -21,6 +21,9 @@ const Login = ({ setCurrentView, onEmailOtpRequired }: Props) => {
   const t = useTranslations("Account.Login")
   const searchParams = useSearchParams()
   const redirectUrl = searchParams.get("redirect")
+  const params = useParams()
+  const countryCode =
+    typeof params?.countryCode === "string" ? params.countryCode : ""
 
   const [otpLoading, setOtpLoading] = useState(false)
   const [otpError, setOtpError] = useState<string | null>(null)
@@ -133,6 +136,10 @@ const Login = ({ setCurrentView, onEmailOtpRequired }: Props) => {
       >
         {redirectUrl && (
           <input type="hidden" name="redirect" value={redirectUrl} />
+        )}
+        {/* Pass countryCode so the server action can redirect to /[cc]/account */}
+        {countryCode && (
+          <input type="hidden" name="countryCode" value={countryCode} />
         )}
 
         {/* Honeypot: hidden field that only bots fill in */}

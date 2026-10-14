@@ -3,6 +3,7 @@ import {
     type SubscriberConfig,
 } from "@medusajs/framework"
 import { resolveLocale, type SupportedLocale } from "../utils/resolve-locale"
+import { escapeHtml } from "../utils/escape-html"
 import { Modules } from "@medusajs/framework/utils"
 
 const locales: Record<SupportedLocale, any> = {
@@ -49,12 +50,13 @@ export default async function handleEmailOtp({
         const lang = resolveLocale(cachedLocale)
         const t = locales[lang] || locales["en-US"]
 
+        const safeOtp = escapeHtml(data.otp)
         const emailHtml = `
             <div style="direction: ${t.dir}; font-family: Tahoma, Arial, sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px; max-width: 600px; margin: 0 auto; background-color: #f9f9f9;">
                 <h2 style="color: #333; text-align: center;">${t.title}</h2>
                 <p style="font-size: 16px; color: #555; text-align: center;">${t.desc}</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <span style="font-size: 24px; font-weight: bold; background-color: #e0e0e0; padding: 10px 20px; border-radius: 4px; letter-spacing: 5px; color: #000;">${data.otp}</span>
+                    <span style="font-size: 24px; font-weight: bold; background-color: #e0e0e0; padding: 10px 20px; border-radius: 4px; letter-spacing: 5px; color: #000;">${safeOtp}</span>
                 </div>
                 <p style="font-size: 14px; color: #999; text-align: center;">${t.expiry}</p>
             </div>

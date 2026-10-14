@@ -13,7 +13,9 @@ let globalActiveSettings: any = null
  * @param settings - The application settings to store globally
  */
 export function setClientSettings(settings: any) {
-  globalActiveSettings = settings
+  if (typeof window !== "undefined") {
+    globalActiveSettings = settings
+  }
 }
 
 /**
@@ -45,7 +47,7 @@ export function getButtonSettings() {
   let activeSettings = null
   if (typeof window === "undefined") {
     const store = getRequestStore()
-    activeSettings = store.settings || globalActiveSettings
+    activeSettings = store.settings
   } else {
     activeSettings = globalActiveSettings
   }
@@ -119,7 +121,7 @@ export const convertToLocale = ({
   let activeLocale = locale
   if (typeof window === "undefined") {
     const store = getRequestStore()
-    activeSettings = activeSettings ?? (store.settings || globalActiveSettings)
+    activeSettings = activeSettings ?? store.settings
     activeLocale = activeLocale ?? store.locale
   } else {
     activeSettings = activeSettings ?? globalActiveSettings

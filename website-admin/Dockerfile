@@ -1,14 +1,15 @@
 # ============================================================
 # Strapi v5 Dockerfile — Multi-stage Production Build
-# بر اساس مستندات رسمی Strapi v5
 # ============================================================
 
 # ── Stage 1: Build ──────────────────────────────────────────
 FROM node:20-alpine AS build
 
-# میرور آروان کلود (ایران) — پایدارترین میرور Alpine در ایران
-RUN echo "https://mirror.arvancloud.ir/alpine/v$(cat /etc/alpine-release | cut -d. -f1,2)/main" > /etc/apk/repositories \
- && echo "https://mirror.arvancloud.ir/alpine/v$(cat /etc/alpine-release | cut -d. -f1,2)/community" >> /etc/apk/repositories
+ARG APK_MIRROR="https://dl-cdn.alpinelinux.org"
+ARG NPM_REGISTRY="https://registry.npmjs.org/"
+
+RUN echo "${APK_MIRROR}/alpine/v$(cat /etc/alpine-release | cut -d. -f1,2)/main" > /etc/apk/repositories \
+ && echo "${APK_MIRROR}/alpine/v$(cat /etc/alpine-release | cut -d. -f1,2)/community" >> /etc/apk/repositories
 
 RUN apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev nasm bash vips git > /dev/null 2>&1
 
@@ -17,7 +18,8 @@ ENV NODE_ENV=${NODE_ENV}
 
 WORKDIR /opt/
 COPY package.json package-lock.json ./
-RUN npm install -g node-gyp \
+RUN npm config set registry "$NPM_REGISTRY" \
+ && npm install -g node-gyp \
  && npm config set fetch-retry-maxtimeout 600000 -g \
  && npm ci
 
@@ -31,21 +33,22 @@ RUN npm run build
 # ── Stage 2: Production runner ──────────────────────────────
 FROM node:20-alpine
 
-# میرور آروان برای runtime
-RUN echo "https://mirror.arvancloud.ir/alpine/v$(cat /etc/alpine-release | cut -d. -f1,2)/main" > /etc/apk/repositories \
- && echo "https://mirror.arvancloud.ir/alpine/v$(cat /etc/alpine-release | cut -d. -f1,2)/community" >> /etc/apk/repositories \
+ARG APK_MIRROR="https://dl-cdn.alpinelinux.org"
+
+RUN echo "${APK_MIRROR}/alpine/v$(cat /etc/alpine-release | cut -d. -f1,2)/main" > /etc/apk/repositories \
+ && echo "${APK_MIRROR}/alpine/v$(cat /etc/alpine-release | cut -d. -f1,2)/community" >> /etc/apk/repositories \
  && apk add --no-cache vips
 
 ENV NODE_ENV=production
 
 WORKDIR /opt/app
 
-# کپی کل app از مرحله build (مثل نسخه اصلی که کار می‌کرد)
-# این روش dist/ و config/ و src/ را همه با هم کپی می‌کند
 COPY --from=build /opt/app ./
+COPY --from=build /opt/node_modules ./node_modules
 
-# نصب فقط production dependencies
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm prune --omit=dev && npm cache clean --force
+
+ENV PATH=/opt/app/node_modules/.bin:/opt/node_modules/.bin:$PATH
 
 RUN chown -R node:node /opt/app
 USER node

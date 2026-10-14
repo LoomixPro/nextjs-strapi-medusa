@@ -86,9 +86,18 @@ export const Otp = ({ phone, onChangePhone }: Props) => {
     return cleanStr
   }
 
+  // Only allow relative internal paths — reject absolute/protocol-relative URLs
+  const safeRedirectUrl = (url: string | null): string => {
+    if (!url || typeof url !== "string") return "/account"
+    const trimmed = url.trim()
+    return trimmed.startsWith("/") && !trimmed.startsWith("//")
+      ? trimmed
+      : "/account"
+  }
+
   useEffect(() => {
-    if (state.success && redirectUrl) {
-      router.push(redirectUrl)
+    if (state.success) {
+      router.push(safeRedirectUrl(redirectUrl))
     }
   }, [state.success, redirectUrl, router])
 

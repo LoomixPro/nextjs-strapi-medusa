@@ -54,34 +54,44 @@ jobs:
 
       - name: Resolve dispatch payload
         id: payload
+        env:
+          INPUT_COMPONENT_PATH: ${{ github.event.inputs.component_path }}
+          INPUT_ACTION: ${{ github.event.inputs.action }}
+          INPUT_COMMIT_CHANGES: ${{ github.event.inputs.commit_changes }}
+          INPUT_AUTO_DEPLOY: ${{ github.event.inputs.auto_deploy }}
+          CLIENT_COMPONENT_PATH: ${{ github.event.client_payload.component_path }}
+          CLIENT_ACTION: ${{ github.event.client_payload.action }}
+          CLIENT_AUTO_DEPLOY: ${{ github.event.client_payload.auto_deploy }}
+          CLIENT_BATCH: ${{ github.event.client_payload.batch }}
         run: |
-          COMPONENT_PATH="${{ github.event.inputs.component_path }}"
-          ACTION="${{ github.event.inputs.action }}"
-          COMMIT_CHANGES="${{ github.event.inputs.commit_changes }}"
-          AUTO_DEPLOY="${{ github.event.inputs.auto_deploy }}"
+          COMPONENT_PATH="$INPUT_COMPONENT_PATH"
+          ACTION="$INPUT_ACTION"
+          COMMIT_CHANGES="$INPUT_COMMIT_CHANGES"
+          AUTO_DEPLOY="$INPUT_AUTO_DEPLOY"
 
-          if [ -n "${{ github.event.client_payload.component_path }}" ]; then
-            COMPONENT_PATH="${{ github.event.client_payload.component_path }}"
+          if [ -n "$CLIENT_COMPONENT_PATH" ]; then
+            COMPONENT_PATH="$CLIENT_COMPONENT_PATH"
           fi
 
-          if [ -n "${{ github.event.client_payload.action }}" ]; then
-            ACTION="${{ github.event.client_payload.action }}"
+          if [ -n "$CLIENT_ACTION" ]; then
+            ACTION="$CLIENT_ACTION"
           fi
 
           # Read auto_deploy from client_payload, default to true if not present
-          if [ "${{ github.event.client_payload.auto_deploy }}" != "" ]; then
-            AUTO_DEPLOY="${{ github.event.client_payload.auto_deploy }}"
+          if [ -n "$CLIENT_AUTO_DEPLOY" ]; then
+            AUTO_DEPLOY="$CLIENT_AUTO_DEPLOY"
           fi
 
           echo "commit_changes=${COMMIT_CHANGES:-true}" >> "$GITHUB_OUTPUT"
           echo "auto_deploy=${AUTO_DEPLOY:-true}" >> "$GITHUB_OUTPUT"
 
-          BATCH_JSON='${{ github.event.client_payload.batch }}'
+          BATCH_JSON="$CLIENT_BATCH"
           if [ -n "$BATCH_JSON" ] && [ "$BATCH_JSON" != "null" ]; then
              echo "batch=$BATCH_JSON" >> "$GITHUB_OUTPUT"
           else
              if [ -n "$COMPONENT_PATH" ]; then
-                echo "batch=[{\"action\":\"${ACTION:-add}\",\"componentPath\":\"$COMPONENT_PATH\"}]" >> "$GITHUB_OUTPUT"
+                SAFE_BATCH=$(jq -n -c --arg act "${ACTION:-add}" --arg cp "$COMPONENT_PATH" '[{action: $act, componentPath: $cp}]')
+                echo "batch=$SAFE_BATCH" >> "$GITHUB_OUTPUT"
              else
                 echo "batch=[]" >> "$GITHUB_OUTPUT"
              fi
@@ -94,11 +104,13 @@ jobs:
 
       - name: Sync Loom component
         if: steps.payload.outputs.batch != '[]'
+        env:
+          BATCH_DATA: ${{ steps.payload.outputs.batch }}
         run: |
-          echo '${{ steps.payload.outputs.batch }}' > batch.json
-          cat batch.json | jq -c '.[]' | while read i; do
-            ACTION=$(echo $i | jq -r '.action')
-            COMPONENT=$(echo $i | jq -r '.componentPath')
+          printf '%s\n' "$BATCH_DATA" > batch.json
+          cat batch.json | jq -c '.[]' | while read -r i; do
+            ACTION=$(echo "$i" | jq -r '.action')
+            COMPONENT=$(echo "$i" | jq -r '.componentPath')
             echo "Syncing $COMPONENT ($ACTION)..."
             node scripts/sync-loom-component.js "$ACTION" "$COMPONENT"
           done

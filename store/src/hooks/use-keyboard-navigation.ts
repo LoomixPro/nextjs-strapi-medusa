@@ -1,5 +1,6 @@
 import type { BaseHit, Hit } from "instantsearch.js"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useParams } from "next/navigation"
 
 interface UseKeyboardNavigationReturn {
   selectedIndex: number
@@ -38,6 +39,10 @@ export function useKeyboardNavigation(
   query: string,
   openResultsInNewTab = false
 ): UseKeyboardNavigationReturn {
+  const params = useParams()
+  const countryCode =
+    typeof params?.countryCode === "string" ? params.countryCode : ""
+
   const [selectedIndex, setSelectedIndex] = useState<number>(0)
   const [selectionOrigin, setSelectionOrigin] = useState<
     "keyboard" | "pointer" | "init"
@@ -69,8 +74,16 @@ export function useKeyboardNavigation(
   // Handler to activate (navigate to) the currently selected hit's URL safely
   const activateSelection = useCallback((): boolean => {
     const hit = hits[selectedIndex]
-    const url = typeof hit?.url === "string" ? hit.url : undefined
-    if (url && isSafeUrl(url)) {
+    const rawUrl = typeof hit?.url === "string" ? hit.url : undefined
+    if (rawUrl && isSafeUrl(rawUrl)) {
+      const url =
+        rawUrl.startsWith("/") &&
+        !rawUrl.startsWith("//") &&
+        countryCode &&
+        !rawUrl.startsWith(`/${countryCode}`)
+          ? `/${countryCode}${rawUrl}`
+          : rawUrl
+
       if (openResultsInNewTab) {
         window.open(url, "_blank", "noopener,noreferrer")
       } else {
@@ -79,7 +92,7 @@ export function useKeyboardNavigation(
       return true
     }
     return false
-  }, [selectedIndex, hits, openResultsInNewTab])
+  }, [selectedIndex, hits, openResultsInNewTab, countryCode])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: expected
   useEffect(() => {

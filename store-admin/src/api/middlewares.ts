@@ -245,45 +245,8 @@ export default defineMiddlewares({
 
     // ═══════════════════════════════════════════════════════════════════════
     // EXISTING MIDDLEWARES
-    // ═══════════════════════════════════════════════════════════════════════
-    {
-      matcher: "/webhooks/strapi",
-      middlewares: [
-        // ... (existing strapi webhook middleware)
-        async (
-          req: MedusaRequest,
-          res: MedusaResponse,
-          next: MedusaNextFunction
-        ) => {
-          const apiKeyModuleService = req.scope.resolve(
-            Modules.API_KEY
-          )
-
-          const authHeader = req.headers["authorization"]
-          const apiKey = authHeader?.replace("Bearer ", "")
-
-          if (!apiKey) {
-            return res.status(401).json({
-              message: "Unauthorized: Missing API key",
-            })
-          }
-
-          try {
-            const isValid = await apiKeyModuleService.authenticate(apiKey)
-            if (!isValid) {
-              return res.status(401).json({
-                message: "Unauthorized: Invalid API key",
-              })
-            }
-            next()
-          } catch (error) {
-            return res.status(401).json({
-              message: "Unauthorized: API key authentication failed",
-            })
-          }
-        },
-      ],
-    },
+    // Webhook authentication for /webhooks/strapi is handled securely in route.ts
+    // via timingSafeEqual using INTERNAL_API_SECRET / STRAPI_WEBHOOK_SECRET
     {
       method: "POST",
       matcher: "/admin/products/:id/variants/:variant_id/images/batch",
@@ -391,6 +354,31 @@ export default defineMiddlewares({
 
           logger.info(`[Middleware] Entering product-categories product unlink middleware for category: ${id}`)
 
+          // Capture target products to unlink before next() modifies the database
+          const body = req.body as any
+          const bodyProductIds: string[] = Array.isArray(body?.remove)
+            ? body.remove
+            : Array.isArray(body?.product_ids)
+            ? body.product_ids
+            : Array.isArray(body?.ids)
+            ? body.ids
+            : []
+
+          let unlinkedProductIds: string[] = [...bodyProductIds]
+
+          // Pre-fetch category products before unlinking so we know which products were removed
+          try {
+            const currentCategory = await productService.retrieveProductCategory(id, {
+              relations: ["products"],
+            })
+            if (currentCategory?.products?.length) {
+              const currentIds = currentCategory.products.map((p: any) => p.id)
+              unlinkedProductIds = Array.from(new Set([...unlinkedProductIds, ...currentIds]))
+            }
+          } catch (err: any) {
+            logger.warn(`[Middleware] Could not pre-fetch category products before DELETE: ${err.message}`)
+          }
+
           res.on("finish", async () => {
             logger.info(`[Middleware] Response finished with status: ${res.statusCode}`)
             if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -410,8 +398,17 @@ export default defineMiddlewares({
               }
 
               try {
-                // 1. Emit product.updated events for cache invalidation (same logic as POST)
+                // 1. Emit product.updated events for all products unlinked from the category
                 const eventBus = req.scope.resolve("event_bus")
+                for (const productId of unlinkedProductIds) {
+                  await eventBus.emit({
+                    name: "product.updated",
+                    data: { id: productId },
+                  })
+                }
+                logger.info(`[Cache] Emitted product.updated events for ${unlinkedProductIds.length} unlinked products`)
+
+                // Also run cache invalidation for any remaining products in the category
                 await invalidateCategoryProductCache(id, productService, eventBus, logger)
 
                 // 2. Trigger Storefront Revalidation

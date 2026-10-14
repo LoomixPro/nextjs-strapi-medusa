@@ -38,6 +38,16 @@ export function formatLocaleNumber(
   }
 }
 
+function getCheckoutStep(cart: HttpTypes.StoreCart) {
+  if (!cart?.shipping_address?.address_1 || !cart.email) {
+    return "address"
+  } else if (cart?.shipping_methods?.length === 0) {
+    return "delivery"
+  } else {
+    return "payment"
+  }
+}
+
 export default function CartTemplate({
   cart,
   customer,
@@ -103,7 +113,7 @@ export default function CartTemplate({
   return (
     <div
       className="min-h-[80vh] pt-28 sm:pt-32 pb-28 sm:pb-12 text-foreground font-sans relative transition-colors duration-300"
-      dir="rtl"
+      dir={isRtl ? "rtl" : "ltr"}
     >
       {!customer && (
         <div className="max-w-6xl mx-auto px-4 mb-6">
@@ -304,7 +314,7 @@ export default function CartTemplate({
 
               <div className="pt-2">
                 <LocalizedClientLink
-                  href="/checkout?step=address"
+                  href={"/checkout?step=" + getCheckoutStep(cart)}
                   className="w-full block"
                 >
                   <Button

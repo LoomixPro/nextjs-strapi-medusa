@@ -1,6 +1,11 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { Modules } from "@medusajs/framework/utils"
 
+/**
+ * Admin Meilisearch re-sync endpoint
+ * Protected by Medusa Admin authentication
+ * POST /admin/meilisearch/sync
+ */
 export async function POST(
     req: MedusaRequest,
     res: MedusaResponse
@@ -10,7 +15,8 @@ export async function POST(
         name: "meilisearch.sync",
         data: {},
     })
-    res.send({
+    res.json({
         message: "Syncing data to Meilisearch",
     })
 }
+

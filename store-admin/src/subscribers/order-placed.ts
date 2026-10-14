@@ -3,13 +3,15 @@ import {
   type SubscriberArgs,
 } from "@medusajs/framework"
 import { resolveOrderLocale, type SupportedLocale } from "../utils/resolve-locale"
+import { escapeHtml } from "../utils/escape-html"
+import { formatCurrency } from "../utils/format-currency"
 import { Modules } from "@medusajs/framework/utils"
 
 const locales: Record<SupportedLocale, any> = {
   "fa-IR": {
     defaultAddress: "آدرس پیش‌فرض",
     dearCustomer: "مشتری گرامی",
-    currency: "ریال",
+    currency: "تومان",
     emailSubject: (id: string) => `تایید ثبت سفارش #${id}`,
     emailTitle: "ثبت سفارش با موفقیت انجام شد",
     emailGreeting: (name: string) => `جناب/سرکار ${name}، سلام.`,
@@ -157,22 +159,28 @@ export default async function orderPlacedHandler({
 
     const phone = order.shipping_address?.phone || order.customer?.phone || ""
     const fullName = `${order.shipping_address?.first_name || ""} ${order.shipping_address?.last_name || ""}`.trim() || t.dearCustomer
-    const totalAmount = Number(order.total || 0).toLocaleString(lang)
-    const currency = order.currency_code === "irr" ? t.currency : order.currency_code.toUpperCase()
+    const safeFullName = escapeHtml(fullName)
+    const safeDisplayId = escapeHtml(order.display_id)
+    const safeCity = escapeHtml(order.shipping_address?.city || "")
+    const safeAddress1 = escapeHtml(order.shipping_address?.address_1 || "")
+    const formattedTotal = formatCurrency(order.total, order.currency_code, lang)
+    const totalAmount = formattedTotal.formattedAmount
+    const currency = formattedTotal.currency
 
     // 1. Prepare Email Notification Content
-    const emailSubject = t.emailSubject(order.display_id)
+    const emailSubject = t.emailSubject(safeDisplayId)
     const itemsListHtml = order.items
       ?.map(
         (item: any) => {
           const qty = Number(item.detail?.quantity ?? item.quantity ?? 1)
           const price = Number(item.unit_price || 0)
-          const itemTotal = (price * qty).toLocaleString(lang)
+          const formattedItem = formatCurrency(price * qty, order.currency_code, lang)
           const qtyString = qty.toLocaleString(lang)
+          const safeTitle = escapeHtml(item.title)
           return `<tr>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.title}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${safeTitle}</td>
             <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${qtyString}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: left;">${itemTotal} ${currency}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: left;">${formattedItem.label}</td>
           </tr>`
         }
       )
@@ -181,8 +189,8 @@ export default async function orderPlacedHandler({
     const emailHtml = `
       <div style="direction: ${t.dir}; font-family: Tahoma, Arial, sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; line-height: 1.6;">
         <h2 style="color: #2e7d32; text-align: center;">${t.emailTitle}</h2>
-        <p>${t.emailGreeting(fullName)}</p>
-        <p>${t.emailDesc(order.display_id)}</p>
+        <p>${t.emailGreeting(safeFullName)}</p>
+        <p>${t.emailDesc(safeDisplayId)}</p>
         
         <h3 style="border-bottom: 2px solid #2e7d32; padding-bottom: 5px; color: #333;">${t.emailOrderDetails}</h3>
         <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
@@ -199,10 +207,10 @@ export default async function orderPlacedHandler({
         </table>
         
         <div style="background-color: #e8f5e9; padding: 15px; border-radius: 4px; font-weight: bold; text-align: ${t.dir === 'rtl' ? 'left' : 'right'};">
-          ${t.emailTotalPaid} ${totalAmount} ${currency}
+          ${t.emailTotalPaid} ${formattedTotal.label}
         </div>
         
-        <p style="margin-top: 20px;"><strong>${t.emailShippingAddress}</strong><br>${order.shipping_address?.city || ""} - ${order.shipping_address?.address_1 || ""}</p>
+        <p style="margin-top: 20px;"><strong>${t.emailShippingAddress}</strong><br>${safeCity} - ${safeAddress1}</p>
         <p style="font-size: 13px; color: #888; text-align: center; margin-top: 30px;">${t.emailThanks}</p>
       </div>
     `

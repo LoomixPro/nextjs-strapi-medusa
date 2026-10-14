@@ -3,6 +3,7 @@ import {
   type SubscriberArgs,
 } from "@medusajs/framework"
 import { resolveOrderLocale, type SupportedLocale } from "../utils/resolve-locale"
+import { escapeHtml } from "../utils/escape-html"
 import { Modules } from "@medusajs/framework/utils"
 
 const locales: Record<SupportedLocale, any> = {
@@ -114,14 +115,20 @@ export default async function orderFulfillmentCreatedHandler({
 
     const phone = order.shipping_address?.phone || order.customer?.phone || ""
     const fullName = `${order.shipping_address?.first_name || ""} ${order.shipping_address?.last_name || ""}`.trim() || t.dearCustomer
+    const safeFullName = escapeHtml(fullName)
+    const safeDisplayId = escapeHtml(order.display_id)
+    const safeCity = escapeHtml(order.shipping_address?.city || "")
+    const safeAddress1 = escapeHtml(order.shipping_address?.address_1 || "")
 
     // 1. Prepare Email Notification Content
-    const emailSubject = t.emailSubject(order.display_id)
+    const emailSubject = t.emailSubject(safeDisplayId)
     const trackingRowsHtml = fulfillment.labels?.map((label: any) => {
+      const safeTrackingNumber = escapeHtml(label.tracking_number)
+      const safeTrackingUrl = label.tracking_url ? escapeHtml(label.tracking_url) : ""
       return `
         <div style="background-color: #f1f8e9; padding: 15px; border-radius: 4px; margin-bottom: 10px; border-${t.dir === 'rtl' ? 'right' : 'left'}: 4px solid #4caf50;">
-          <p style="margin: 0; font-size: 14px;"><strong>${t.trackingNum}</strong> <span style="font-family: monospace; font-size: 16px;">${label.tracking_number}</span></p>
-          ${label.tracking_url ? `<p style="margin: 5px 0 0 0; font-size: 14px;"><strong>${t.trackingLink}</strong> <a href="${label.tracking_url}" target="_blank" style="color: #4caf50; text-decoration: none;">${t.trackingLinkText}</a></p>` : ""}
+          <p style="margin: 0; font-size: 14px;"><strong>${t.trackingNum}</strong> <span style="font-family: monospace; font-size: 16px;">${safeTrackingNumber}</span></p>
+          ${safeTrackingUrl ? `<p style="margin: 5px 0 0 0; font-size: 14px;"><strong>${t.trackingLink}</strong> <a href="${safeTrackingUrl}" target="_blank" style="color: #4caf50; text-decoration: none;">${t.trackingLinkText}</a></p>` : ""}
         </div>
       `
     }).join("") || ""
@@ -129,15 +136,15 @@ export default async function orderFulfillmentCreatedHandler({
     const emailHtml = `
       <div style="direction: ${t.dir}; font-family: Tahoma, Arial, sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; line-height: 1.6;">
         <h2 style="color: #0288d1; text-align: center;">${t.emailTitle}</h2>
-        <p>${t.emailGreeting(fullName)}</p>
-        <p>${t.emailDesc(order.display_id)}</p>
+        <p>${t.emailGreeting(safeFullName)}</p>
+        <p>${t.emailDesc(safeDisplayId)}</p>
         
         ${trackingRowsHtml ? `
         <h3 style="border-bottom: 2px solid #0288d1; padding-bottom: 5px; color: #333;">${t.trackingTitle}</h3>
         ${trackingRowsHtml}
         ` : ""}
         
-        <p style="margin-top: 20px;"><strong>${t.addressTitle}</strong><br>${order.shipping_address?.city || ""} - ${order.shipping_address?.address_1 || ""}</p>
+        <p style="margin-top: 20px;"><strong>${t.addressTitle}</strong><br>${safeCity} - ${safeAddress1}</p>
         <p style="font-size: 13px; color: #888; text-align: center; margin-top: 30px;">${t.emailSupport}</p>
       </div>
     `

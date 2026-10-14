@@ -1,7 +1,12 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { Hits, InstantSearch, SearchBox } from "react-instantsearch"
+import {
+  Hits,
+  InstantSearch,
+  SearchBox,
+  useSearchBox,
+} from "react-instantsearch"
 import { searchClient } from "../../../../lib/config"
 import Modal from "../../../common/components/modal"
 import Image from "next/image"
@@ -11,22 +16,20 @@ import { usePathname } from "next/navigation"
 
 interface Hit {
   id: string
-  title: string
-  description: string
+  title?: string
+  description?: string
   handle: string
-  thumbnail: string
-  categories: {
+  thumbnail?: string | null
+  categories?: {
     id: string
     name: string
     handle: string
   }[]
-  tags: {
+  tags?: {
     id: string
     value: string
   }[]
 }
-
-import { useSearchBox } from "react-instantsearch"
 
 const ConditionalHits = () => {
   const { query } = useSearchBox()
@@ -45,7 +48,8 @@ const ConditionalHits = () => {
 export default function SearchModal({
   className,
   iconSize = 22,
-}: { className?: string; iconSize?: number } = {}) {
+  indexName = process.env.NEXT_PUBLIC_MEILISEARCH_INDEX_NAME || "products",
+}: { className?: string; iconSize?: number; indexName?: string } = {}) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
 
@@ -66,10 +70,7 @@ export default function SearchModal({
         <Search size={iconSize} />
       </button>
       <Modal isOpen={isOpen} close={() => setIsOpen(false)}>
-        <InstantSearch
-          searchClient={searchClient}
-          indexName={process.env.NEXT_PUBLIC_MEILISEARCH_INDEX_NAME}
-        >
+        <InstantSearch searchClient={searchClient} indexName={indexName}>
           <SearchBox className="w-full [&_input]:w-[94%] [&_input]:outline-none [&_button]:w-[3%]" />
           <ConditionalHits />
         </InstantSearch>
@@ -81,7 +82,16 @@ export default function SearchModal({
 const Hit = ({ hit }: { hit: Hit }) => {
   return (
     <div className="flex flex-row gap-x-2 mt-4 relative">
-      <Image src={hit.thumbnail} alt={hit.title} width={100} height={100} />
+      {hit.thumbnail ? (
+        <Image
+          src={hit.thumbnail}
+          alt={hit.title || "Product"}
+          width={100}
+          height={100}
+        />
+      ) : (
+        <div className="w-[100px] h-[100px] bg-muted rounded" />
+      )}
       <div className="flex flex-col gap-y-1">
         <h3>{hit.title}</h3>
         <p className="text-sm text-gray-500">{hit.description}</p>
@@ -89,7 +99,7 @@ const Hit = ({ hit }: { hit: Hit }) => {
       <LocalizedClientLink
         href={`/products/${hit.handle}`}
         className="absolute right-0 top-0 w-full h-full"
-        aria-label={`View Product: ${hit.title}`}
+        aria-label={`View Product: ${hit.title || "Product"}`}
       />
     </div>
   )

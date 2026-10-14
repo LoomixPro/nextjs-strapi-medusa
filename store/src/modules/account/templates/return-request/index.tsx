@@ -77,7 +77,9 @@ const ReturnRequestTemplate: React.FC<ReturnRequestTemplateProps> = ({
     const locationId = (shippingOptions as any[]).find(
       (opt) => opt.id === selectedShippingOption
     )?.service_zone?.fulfillment_set?.location?.id
-    formData.append("location_id", locationId)
+    if (locationId) {
+      formData.append("location_id", locationId)
+    }
     if (isIran && shabaNumber) {
       formData.append("shaba_number", shabaNumber)
     }
@@ -180,7 +182,7 @@ const ReturnRequestTemplate: React.FC<ReturnRequestTemplateProps> = ({
                 shippingOptions={shippingOptions}
                 selectedOption={selectedShippingOption}
                 onOptionSelect={setSelectedShippingOption}
-                cartId={(order as any).cart.id}
+                cartId={(order as any).cart?.id || ""}
                 currencyCode={order.currency_code}
               />
             </div>

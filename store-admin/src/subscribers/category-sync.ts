@@ -1,45 +1,5 @@
 import { type SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
 import StrapiModuleService, { Collection } from "../modules/strapi/service"
-import { createProductCategoriesWorkflow, updateProductCategoriesWorkflow, deleteProductCategoriesWorkflow } from "@medusajs/core-flows"
-
-// Hook into create
-createProductCategoriesWorkflow.hooks.categoriesCreated(
-    async ({ categories }, { container }) => {
-        for (const category of categories) {
-            await categorySync({
-                event: { name: "product-category.created", data: { id: category.id } },
-                container
-            } as any)
-        }
-    }
-)
-
-// Hook into update
-updateProductCategoriesWorkflow.hooks.categoriesUpdated(
-    async ({ categories }, { container }) => {
-        for (const category of categories) {
-            await categorySync({
-                event: { name: "product-category.updated", data: { id: category.id } },
-                container
-            } as any)
-        }
-    }
-)
-
-// Hook into delete
-deleteProductCategoriesWorkflow.hooks.categoriesDeleted(
-    async ({ ids }, { container }) => {
-        // ids is sometimes passed differently, make sure it's an array
-        const idArray = Array.isArray(ids) ? ids : (ids as any).ids || []
-        
-        for (const id of idArray) {
-            await categorySync({
-                event: { name: "product-category.deleted", data: { id } },
-                container
-            } as any)
-        }
-    }
-)
 
 export default async function categorySync({
     event,
@@ -100,10 +60,22 @@ export default async function categorySync({
             baseLocale = updated.data?.locale
             logger.info(`Updated category ${category.id} in Strapi`)
         } else {
-            const created = await strapiService.create(Collection.CATEGORIES, strapiData)
-            documentId = created.data?.documentId
-            baseLocale = created.data?.locale
-            logger.info(`Created category ${category.id} in Strapi`)
+            try {
+                const created = await strapiService.create(Collection.CATEGORIES, strapiData)
+                documentId = created.data?.documentId
+                baseLocale = created.data?.locale
+                logger.info(`Created category ${category.id} in Strapi`)
+            } catch (createError) {
+                const retryExisting = await strapiService.findByMedusaId(Collection.CATEGORIES, category.id)
+                if (retryExisting) {
+                    const updated = await strapiService.update(Collection.CATEGORIES, retryExisting.documentId, strapiData)
+                    documentId = updated.data?.documentId
+                    baseLocale = updated.data?.locale
+                    logger.info(`Updated category ${category.id} in Strapi (after create conflict)`)
+                } else {
+                    throw createError
+                }
+            }
         }
 
         if (documentId) {

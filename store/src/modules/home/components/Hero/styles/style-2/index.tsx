@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { useLocale, useTranslations } from "next-intl"
 import { ChronicleButton } from "./chronicle-button"
 import { getFeatureIcon } from "@modules/common/components/feature-icon"
@@ -472,9 +472,28 @@ export interface HeroStyle2Props {
 
 export default function HeroStyle2({ section }: HeroStyle2Props) {
   const router = useRouter()
+  const params = useParams()
+  const countryCode =
+    typeof params?.countryCode === "string" ? params.countryCode : ""
   const locale = useLocale()
 
   const isRTL = isRtlLocale(locale)
+
+  const localizeLink = (link: string) => {
+    if (!link) return countryCode ? `/${countryCode}` : "/"
+    if (
+      link.startsWith("http://") ||
+      link.startsWith("https://") ||
+      link.startsWith("//")
+    ) {
+      return link
+    }
+    const cleanLink = link.startsWith("/") ? link : `/${link}`
+    if (countryCode && !cleanLink.startsWith(`/${countryCode}`)) {
+      return `/${countryCode}${cleanLink}`
+    }
+    return cleanLink
+  }
 
   const allHeroImages = [
     ...(section?.sideImages || []),
@@ -543,8 +562,8 @@ export default function HeroStyle2({ section }: HeroStyle2Props) {
       buttonText={buttonText}
       slides={defaultSlides}
       highlights={highlights}
-      onMainButtonClick={() => router.push(buttonLink)}
-      onGridImageClick={() => router.push("/store")}
+      onMainButtonClick={() => router.push(localizeLink(buttonLink))}
+      onGridImageClick={() => router.push(localizeLink("/store"))}
       buttonStyle={{
         backgroundColor: "#005baa",
         color: "#ffffff",

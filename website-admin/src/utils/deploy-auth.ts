@@ -63,17 +63,6 @@ export async function isDeployAuthorized(ctx: Context): Promise<boolean> {
         // fall through
       }
     }
-
-    // Fallback: try users-permissions JWT (for API tokens)
-    try {
-      const jwtService = globalStrapi?.plugins?.['users-permissions']?.services?.jwt
-      if (jwtService?.verify) {
-        await jwtService.verify(token)
-        return true
-      }
-    } catch {
-      // not a valid users-permissions token either
-    }
   }
 
   return false

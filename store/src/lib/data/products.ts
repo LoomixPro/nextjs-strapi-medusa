@@ -376,7 +376,8 @@ export const listProductsWithSort = async ({
 
         return {
           response: { products: paginatedProducts, count: totalCount },
-          nextPage: page * limit < totalCount ? page + 1 : null,
+          nextPage:
+            totalCount > offset + limit ? (page === 0 ? 2 : page + 1) : null,
         }
       }
     }

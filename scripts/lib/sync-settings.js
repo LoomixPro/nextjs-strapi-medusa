@@ -198,21 +198,19 @@ async function syncSettings(options = {}) {
     footer: modulesObj.footer
       ? {
           footerStyle: modulesObj.footer.footerStyle || "style-1",
-          logo: modulesObj.footer.logo,
-          description_fa: modulesObj.footer.description_fa,
-          description_en: modulesObj.footer.description_en,
-          copyright_fa: modulesObj.footer.copyright_fa,
-          copyright_en: modulesObj.footer.copyright_en,
+          logoLight: modulesObj.footer.logoLight,
+          logoDark: modulesObj.footer.logoDark,
+          translations: modulesObj.footer.translations || [],
           socialLinks: modulesObj.footer.socialLinks || [],
         }
       : { footerStyle: "style-1" },
     background: modulesObj.background
       ? {
-          style: modulesObj.background.style || "silk",
+          style: modulesObj.background.style || "none",
           opacityLight: modulesObj.background.opacityLight ?? 40,
           opacityDark: modulesObj.background.opacityDark ?? 30,
         }
-      : { style: "silk", opacityLight: 40, opacityDark: 30 },
+      : { style: "none", opacityLight: 40, opacityDark: 30 },
     button: {
       style: modulesObj.button?.style || "style-1",
     },

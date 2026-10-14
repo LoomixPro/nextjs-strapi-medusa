@@ -4,7 +4,7 @@ echo    Next.js + Medusa + Strapi Installation Script
 echo =======================================================
 echo.
 echo Starting Docker containers...
-docker compose up -d
+docker compose up -d --build
 
 echo.
 echo Waiting for services to initialize (this may take a few minutes)...

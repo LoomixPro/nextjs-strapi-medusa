@@ -14,6 +14,10 @@ export const deleteProductFromStrapiStep = createStep(
         // Find the Strapi product
         const strapiProduct = await strapiService.findByMedusaId(Collection.PRODUCTS, id)
 
+        if (!strapiProduct) {
+            return new StepResponse(void 0, null)
+        }
+
         // Delete product from Strapi (all locales)
         await strapiService.delete(Collection.PRODUCTS, strapiProduct.documentId, { locale: '*' })
 
@@ -22,21 +26,21 @@ export const deleteProductFromStrapiStep = createStep(
             strapiProduct
         )
     },
-    async (compensationData, { container }) => {
-        if (!compensationData) {
+    async (deletedProduct: any, { container }) => {
+        if (!deletedProduct) {
             return
         }
 
         const strapiService: StrapiModuleService = container.resolve(STRAPI_MODULE)
 
         await strapiService.create(Collection.PRODUCTS, {
-            medusaId: compensationData.medusaId,
-            title: compensationData.title,
-            subtitle: compensationData.subtitle,
-            description: compensationData.description,
-            handle: compensationData.handle,
-            images: compensationData.images || [],
-            locale: compensationData.locale,
+            medusaId: deletedProduct.medusaId,
+            title: deletedProduct.title,
+            subtitle: deletedProduct.subtitle,
+            description: deletedProduct.description,
+            handle: deletedProduct.handle,
+            images: deletedProduct.images || [],
+            locale: deletedProduct.locale,
         })
     }
 )

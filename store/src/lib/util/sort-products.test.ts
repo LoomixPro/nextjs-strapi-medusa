@@ -48,4 +48,21 @@ describe("sortProducts utility", () => {
     expect(result[1].id).toBe("prod_3")
     expect(result[2].id).toBe("prod_1")
   })
+
+  it("should place products with missing prices at the end for price_asc", () => {
+    const productsWithMissing: any[] = [
+      {
+        id: "prod_no_price",
+        variants: [{ calculated_price: null }],
+      },
+      {
+        id: "prod_with_price",
+        variants: [{ calculated_price: { calculated_amount: 50 } }],
+      },
+    ]
+
+    const result = sortProducts([...productsWithMissing], "price_asc" as any)
+    expect(result[0].id).toBe("prod_with_price")
+    expect(result[1].id).toBe("prod_no_price")
+  })
 })

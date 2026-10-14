@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { useLocale, useTranslations } from "next-intl"
 import {
   ArrowRight,
@@ -38,9 +38,28 @@ export default function HeroStyle1({
   heroProducts = [],
 }: HeroStyle1Props) {
   const router = useRouter()
+  const params = useParams()
+  const countryCode =
+    typeof params?.countryCode === "string" ? params.countryCode : ""
   const locale = useLocale()
   const t = useTranslations("HomePage")
   const isRTL = isRtlLocale(locale)
+
+  const localizeLink = (link: string) => {
+    if (!link) return countryCode ? `/${countryCode}` : "/"
+    if (
+      link.startsWith("http://") ||
+      link.startsWith("https://") ||
+      link.startsWith("//")
+    ) {
+      return link
+    }
+    const cleanLink = link.startsWith("/") ? link : `/${link}`
+    if (countryCode && !cleanLink.startsWith(`/${countryCode}`)) {
+      return `/${countryCode}${cleanLink}`
+    }
+    return cleanLink
+  }
 
   // 1. Prepare image slides: from selected Medusa products in Strapi, or fallback to section images / defaults
   const productSlides: VisualSlide[] =
@@ -195,7 +214,7 @@ export default function HeroStyle1({
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => router.push(buttonLink)}
+              onClick={() => router.push(localizeLink(buttonLink))}
               className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full font-bold text-sm sm:text-base text-primary-foreground bg-primary shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:bg-primary/95 transition-all duration-300 overflow-hidden cursor-pointer"
             >
               <ShoppingBag className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5" />
@@ -275,7 +294,9 @@ export default function HeroStyle1({
                   </h2>
                 </div>
                 <button
-                  onClick={() => router.push(currentSlide.link || buttonLink)}
+                  onClick={() =>
+                    router.push(localizeLink(currentSlide.link || buttonLink))
+                  }
                   className="shrink-0 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary text-primary-foreground shadow-md hover:scale-110 transition-transform cursor-pointer"
                   aria-label="Shop Item"
                 >
