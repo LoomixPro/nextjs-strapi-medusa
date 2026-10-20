@@ -1,9 +1,14 @@
 # 🚀 Loomix Commerce — Phased Docker Deployment & Developer Guide
 
-[![Donate with NowPayments](https://img.shields.io/badge/Donate-NowPayments-rose.svg?logo=heart&logoColor=white)](https://nowpayments.io/donation/loomix)
+<p align="left">
+  <a href="https://loomix.pro"><img src="https://img.shields.io/badge/Website-loomix.pro-4F46E5?style=flat-square&logo=googlechrome&logoColor=white" alt="Official Website" /></a>
+  <a href="https://loomix.pro/docs"><img src="https://img.shields.io/badge/Docs-loomix.pro%2Fdocs-0EA5E9?style=flat-square&logo=gitbook&logoColor=white" alt="Documentation" /></a>
+  <a href="https://nowpayments.io/donation/loomix"><img src="https://img.shields.io/badge/Donate-NowPayments-rose?style=flat-square&logo=heart&logoColor=white" alt="Donate" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-10B981?style=flat-square" alt="License" /></a>
+</p>
 
-> 📚 **Comprehensive Developer Documentation**  
-> For supplementary development guides, system architecture, customization instructions, and adding features, please refer to [docs/README.md](docs/README.md).
+> 🌐 **Official Website & Demos:** [https://loomix.pro](https://loomix.pro)  
+> 📚 **Developer Documentation & Architecture Guides:** [https://loomix.pro/docs](https://loomix.pro/docs) (also available locally in [docs/README.md](docs/README.md)).
 
 This guide provides step-by-step instructions for transferring files and running the **Loomix Commerce** services — infrastructure, **Strapi**, **Medusa**, the **Storefront** (Next.js), and **Portainer** container management & monitoring — on a Virtual Private Server (VPS) or local VM using Docker.
 
