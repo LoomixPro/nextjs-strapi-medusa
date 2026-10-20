@@ -1,5 +1,7 @@
 # Contributing to Loomix Commerce
 
+[![Donate with NowPayments](https://img.shields.io/badge/Donate-NowPayments-rose.svg?logo=heart&logoColor=white)](https://nowpayments.io/donation/loomix)
+
 Thank you for your interest in contributing to **Loomix Commerce**! We welcome community contributions, bug fixes, feature proposals, and documentation improvements.
 
 Please take a few moments to review these guidelines before submitting an issue or pull request.
@@ -8,6 +10,7 @@ Please take a few moments to review these guidelines before submitting an issue 
 
 ## Table of Contents
 
+- [Financial Sponsorship & Donations](#financial-sponsorship--donations)
 - [Code of Conduct](#code-of-conduct)
 - [How Can I Contribute?](#how-can-i-contribute)
   - [Reporting Bugs](#reporting-bugs)
@@ -200,6 +203,12 @@ Before submitting your PR, verify:
 ## Security Disclosures
 
 If you discover a security vulnerability, please **DO NOT** open a public issue. Instead, report it privately to the maintainers via GitHub Private Vulnerability Reporting or via email.
+
+---
+
+## Financial Sponsorship & Donations
+
+If you'd like to support the ongoing maintenance and development of Loomix Commerce financially, you can donate crypto via [NowPayments](https://nowpayments.io/donation/loomix).
 
 ---
 

@@ -1,5 +1,7 @@
 # 🚀 Loomix Commerce — Phased Docker Deployment & Developer Guide
 
+[![Donate with NowPayments](https://img.shields.io/badge/Donate-NowPayments-rose.svg?logo=heart&logoColor=white)](https://nowpayments.io/donation/loomix)
+
 > 📚 **Comprehensive Developer Documentation**  
 > For supplementary development guides, system architecture, customization instructions, and adding features, please refer to [docs/README.md](docs/README.md).
 
@@ -621,6 +623,14 @@ A GitHub Actions self-hosted runner must be running on the VPS.
 ## 🤝 Contributing
 
 We welcome contributions from the community! Please read our [Contribution Guidelines](CONTRIBUTING.md) to learn how to propose bug fixes, report issues, or contribute features.
+
+## 💖 Support & Sponsor
+
+If you find Loomix Commerce valuable for your projects, consider supporting its open-source development:
+
+[![Donate with NowPayments](https://img.shields.io/badge/Donate-NowPayments%20(Crypto)-F02E65?style=for-the-badge&logo=bitcoin&logoColor=white)](https://nowpayments.io/donation/loomix)
+
+Direct crypto donations help maintain documentation, infrastructure, and continuous improvements.
 
 ## 📄 License
 
