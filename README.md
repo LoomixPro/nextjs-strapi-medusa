@@ -615,3 +615,13 @@ GITHUB_DEPLOY_TOKEN=ghp_your_personal_access_token # Requires 'repo' and 'workfl
 GITHUB_DEPLOY_REPO=your_username/your_repo_name
 ```
 A GitHub Actions self-hosted runner must be running on the VPS.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Please read our [Contribution Guidelines](CONTRIBUTING.md) to learn how to propose bug fixes, report issues, or contribute features.
+
+## 📄 License
+
+This software is licensed under the terms described in the [LICENSE](LICENSE) file.
