@@ -57,7 +57,7 @@ jobs:
     runs-on: self-hosted
     environment: production
     steps:
-      - name: Pull Latest Storefront Image and Restart
+      - name: Pull Latest Storefront Image and Zero-Downtime Restart
         env:
           TARGET_DIR_SECRET: ${{ secrets.DEPLOY_PATH }}
         run: |
@@ -72,6 +72,57 @@ jobs:
           
           echo "Pulling the latest storefront image..."
           docker compose pull storefront
-          echo "Restarting storefront container..."
-          docker compose up -d storefront
+
+          OLD_CONTAINERS=$(docker compose ps -q storefront 2>/dev/null || true)
+
+          if [ -z "$OLD_CONTAINERS" ]; then
+            echo "No running storefront container found. Starting fresh..."
+            docker compose up -d storefront
+          else
+            echo "Starting new storefront container alongside current one..."
+            docker compose up -d --scale storefront=2 --no-recreate storefront
+
+            NEW_CONTAINER=""
+            for c in $(docker compose ps -q storefront); do
+              if ! echo "$OLD_CONTAINERS" | grep -q "$c"; then
+                NEW_CONTAINER="$c"
+                break
+              fi
+            done
+
+            if [ -z "$NEW_CONTAINER" ]; then
+              echo "Warning: New container ID not found, applying standard compose up..."
+              docker compose up -d storefront
+            else
+              echo "Waiting for new container ($NEW_CONTAINER) to become healthy..."
+              HEALTHY=false
+              for i in $(seq 1 30); do
+                STATUS=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$NEW_CONTAINER" 2>/dev/null || echo "starting")
+                if [ "$STATUS" = "healthy" ]; then
+                  echo "New container is healthy!"
+                  HEALTHY=true
+                  break
+                fi
+                echo "Status: $STATUS (waiting 2s, attempt $i/30)..."
+                sleep 2
+              done
+
+              if [ "$HEALTHY" != "true" ]; then
+                echo "Error: New container failed healthcheck within 60 seconds! Container logs:"
+                docker logs --tail 50 "$NEW_CONTAINER" || true
+                echo "Aborting deployment and removing failed container to keep current version running..."
+                docker stop "$NEW_CONTAINER" || true
+                docker rm "$NEW_CONTAINER" || true
+                exit 1
+              fi
+
+              echo "Stopping and removing old container(s)..."
+              for old in $OLD_CONTAINERS; do
+                docker stop "$old" || true
+                docker rm "$old" || true
+              done
+            fi
+          fi
+
+          echo "Pruning dangling images..."
           docker image prune -f

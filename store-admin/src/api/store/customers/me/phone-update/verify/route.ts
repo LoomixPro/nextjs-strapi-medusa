@@ -1,3 +1,4 @@
+import crypto from "node:crypto"
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError, Modules } from "@medusajs/framework/utils"
 
@@ -27,15 +28,36 @@ export const POST = async (
     const customerModule = req.scope.resolve(Modules.CUSTOMER)
     const authModuleService = req.scope.resolve(Modules.AUTH)
 
-    // 1. Verify OTP code from cache
+    // 1. Verify OTP code from cache with attempt limiting & timingSafeEqual
     const cacheKey = `phone-update-otp:${customerId}:${cleanPhone}`
-    const cachedCode = await cacheService.get(cacheKey)
+    const attemptsKey = `phone-update-otp-attempts:${customerId}:${cleanPhone}`
 
-    if (!cachedCode || cachedCode !== code.trim()) {
+    const attempts = Number((await cacheService.get(attemptsKey)) || 0)
+    if (attempts >= 5) {
+        await cacheService.invalidate(cacheKey)
+        return res.status(429).json({
+            error: "Too many failed attempts. Please request a new verification code."
+        })
+    }
+
+    const cachedCode = await cacheService.get<string>(cacheKey)
+    const inputCode = code.trim()
+
+    let isMatch = false
+    if (cachedCode && typeof cachedCode === "string") {
+        const a = new Uint8Array(crypto.createHash("sha256").update(cachedCode).digest())
+        const b = new Uint8Array(crypto.createHash("sha256").update(inputCode).digest())
+        isMatch = crypto.timingSafeEqual(a, b)
+    }
+
+    if (!isMatch) {
+        await cacheService.set(attemptsKey, String(attempts + 1), 300)
         return res.status(400).json({
             error: "Invalid or expired verification code."
         })
     }
+
+    await cacheService.invalidate(attemptsKey)
 
     // 2. Check customer uniqueness (to prevent race conditions)
     const [existingCustomer] = await customerModule.listCustomers({ phone: cleanPhone } as any)

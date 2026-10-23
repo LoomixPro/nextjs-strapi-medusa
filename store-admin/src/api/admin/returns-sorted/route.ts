@@ -4,8 +4,11 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
 
-    const limit = Number(req.query.limit) || 15
-    const offset = Number(req.query.offset) || 0
+    const rawLimit = Number(req.query.limit) || 15
+    const rawOffset = Number(req.query.offset) || 0
+
+    const limit = Math.min(Math.max(rawLimit, 1), 100)
+    const offset = Math.max(rawOffset, 0)
 
     const { data: returns, metadata } = await query.graph({
         entity: "return",

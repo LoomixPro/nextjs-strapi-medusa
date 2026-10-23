@@ -1,15 +1,6 @@
 # 🚀 Loomix Commerce — Phased Docker Deployment & Developer Guide
 
-<p align="left">
-  <a href="https://loomix.pro"><img src="https://img.shields.io/badge/Website-loomix.pro-4F46E5?style=flat-square&logo=googlechrome&logoColor=white" alt="Official Website" /></a>
-  <a href="https://loomix.pro/docs"><img src="https://img.shields.io/badge/Docs-loomix.pro%2Fdocs-0EA5E9?style=flat-square&logo=gitbook&logoColor=white" alt="Documentation" /></a>
-  <a href="https://github.com/Loomix-pro/Loomix-registry"><img src="https://img.shields.io/badge/Registry-Loomix--registry-8B5CF6?style=flat-square&logo=github&logoColor=white" alt="Blocks Registry" /></a>
-  <a href="https://nowpayments.io/donation/loomix"><img src="https://img.shields.io/badge/Donate-NowPayments-rose?style=flat-square&logo=heart&logoColor=white" alt="Donate" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-10B981?style=flat-square" alt="License" /></a>
-</p>
-
 > 🌐 **Official Website & Demos:** [https://loomix.pro](https://loomix.pro)  
-> 🧩 **Styles & Blocks Registry:** [https://github.com/Loomix-pro/Loomix-registry](https://github.com/Loomix-pro/Loomix-registry) (local: `loom-blocks-registry/`)  
 > 📚 **Developer Documentation & Architecture Guides:** [https://loomix.pro/docs](https://loomix.pro/docs) (also available locally in [docs/README.md](docs/README.md)).
 
 This guide provides step-by-step instructions for transferring files and running the **Loomix Commerce** services — infrastructure, **Strapi**, **Medusa**, the **Storefront** (Next.js), and **Portainer** container management & monitoring — on a Virtual Private Server (VPS) or local VM using Docker.
@@ -44,6 +35,7 @@ Due to the heavy resource consumption during Next.js and Strapi builds, the depl
 8. [Sample Data Seeding Script](#8-sample-data-seeding-script)
 9. [Useful Docker Commands](#9-useful-docker-commands)
 10. [Storefront Settings & Component Syncing (Strapi → GitHub CI/CD)](#10-storefront-settings--component-syncing-strapi--github-cicd)
+11. [License](#11-license)
 
 ---
 
@@ -614,11 +606,8 @@ When clicking **Update Storefront**:
 - **Build Trigger**: Strapi then dispatches the deployment to GitHub Actions (`deploy-storefront.yml`) to automatically build and deploy the updated container.
 
 #### 2. Loomix Block Component Sync (`sync-loom-component.js`)
-All component styles and design variants are maintained and distributed via the standalone [**Loomix Blocks Registry**](https://github.com/Loomix-pro/Loomix-registry) (available locally in `loom-blocks-registry/`):
-- **Component & Style Registry**: All modular block designs (Heroes, Products, Cart, Checkout, Navbars) live in the external [Loomix-registry](https://github.com/Loomix-pro/Loomix-registry) repository.
-- **Queueing in Strapi**: In Strapi **Storefront Management**, clicking **+ Add to Storefront (Queue)** or **Remove Style (Queue)** queues component style modifications into `sync-history.json`.
-- **Local Development**: In development mode (`NODE_ENV=development`), sync scripts read directly from the local `loom-blocks-registry/` directory for immediate file updates.
-- **Production CI/CD Sync**: In production, Strapi fetches the required block code from the registry repository via `REGISTRY_URL` and triggers an automated GitHub Actions build to compile and deploy the updated storefront without touching backend containers.
+- In Strapi **Storefront Management**, clicking **+ Add to Storefront (Queue)** or **Remove Style (Queue)** queues component style modifications into `sync-history.json`.
+- Clicking **Update Storefront** automatically syncs settings presets and dispatches the component updates to GitHub Actions to build the storefront.
 
 #### Requirements for Production Sync:
 Configure these in `website-admin/.env` (and server `.env`):
@@ -630,18 +619,7 @@ A GitHub Actions self-hosted runner must be running on the VPS.
 
 ---
 
-## 🤝 Contributing
+### 11. License
 
-We welcome contributions from the community! Please read our [Contribution Guidelines](CONTRIBUTING.md) to learn how to propose bug fixes, report issues, or contribute features.
-
-## 💖 Support & Sponsor
-
-If you find Loomix Commerce valuable for your projects, consider supporting its open-source development:
-
-[![Donate with NowPayments](https://img.shields.io/badge/Donate-NowPayments%20(Crypto)-F02E65?style=for-the-badge&logo=bitcoin&logoColor=white)](https://nowpayments.io/donation/loomix)
-
-Direct crypto donations help maintain documentation, infrastructure, and continuous improvements.
-
-## 📄 License
-
-This project is open-source and licensed under the [MIT License](LICENSE).
+This software is proprietary and commercial. All rights reserved by **Loomix.pro**.  
+Deployment and use are governed by the terms specified in the [LICENSE](LICENSE) file.

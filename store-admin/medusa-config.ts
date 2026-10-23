@@ -7,6 +7,16 @@ import {
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
+const isProd = process.env.NODE_ENV === "production"
+const jwtSecret = process.env.JWT_SECRET || (!isProd ? "supersecret" : "")
+const cookieSecret = process.env.COOKIE_SECRET || (!isProd ? "supersecret" : "")
+
+if (isProd && (!jwtSecret || jwtSecret === "supersecret" || !cookieSecret || cookieSecret === "supersecret")) {
+  throw new Error(
+    "[FATAL] JWT_SECRET and COOKIE_SECRET must be set to strong, unique values in production."
+  )
+}
+
 const stripeApiKey =
   process.env.STRIPE_KEY || process.env.STRIPE_API_KEY
 
@@ -36,8 +46,8 @@ module.exports = defineConfig({
       storeCors: resolveStoreCors(),
       adminCors: resolveAdminCors(),
       authCors: resolveAuthCors(),
-      jwtSecret: process.env.JWT_SECRET || "supersecret",
-      cookieSecret: process.env.COOKIE_SECRET || "supersecret",
+      jwtSecret,
+      cookieSecret,
       authMethodsPerActor: {
         user: ["emailpass"],
         customer: ["emailpass", "phone-auth", "email-otp", "google"],
@@ -61,14 +71,14 @@ module.exports = defineConfig({
             resolve: "./src/modules/auth/providers/otp",
             id: "phone-auth",
             options: {
-              jwtSecret: process.env.JWT_SECRET || "supersecret",
+              jwtSecret,
             },
           },
           {
             resolve: "./src/modules/auth/providers/email-otp",
             id: "email-otp",
             options: {
-              jwtSecret: process.env.JWT_SECRET || "supersecret",
+              jwtSecret,
             },
           },
           {
