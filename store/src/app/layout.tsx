@@ -83,6 +83,9 @@ export const viewport: Viewport = {
   themeColor: "#000000",
 }
 
+// TODO: Cache Components adoption. Allow blocking prerender for root layout
+export const instant = false
+
 export default async function RootLayout(props: { children: React.ReactNode }) {
   const settings = await getStorefrontSettings()
 

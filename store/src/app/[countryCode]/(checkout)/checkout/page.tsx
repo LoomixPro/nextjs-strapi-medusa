@@ -19,6 +19,8 @@ export async function generateMetadata() {
   }
 }
 
+export const instant = false
+
 export default function Checkout(props: {
   params: Promise<{ countryCode: string }>
   searchParams: Promise<{ step?: string }>

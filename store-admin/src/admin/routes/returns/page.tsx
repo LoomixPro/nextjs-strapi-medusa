@@ -10,7 +10,7 @@ import {
     DataTablePaginationState,
 } from "@medusajs/ui"
 import { useQuery } from "@tanstack/react-query"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { sdk } from "../../lib/sdk"
 import { Link } from "react-router-dom"

@@ -20,5 +20,10 @@ export default async function OrderCompletedTemplate(
 
   if (!DynamicComponent) return null
 
-  return <DynamicComponent {...props} />
+  return (
+    <DynamicComponent
+      {...props}
+      returnDeadlineDays={settings.returnDeadlineDays ?? 7}
+    />
+  )
 }

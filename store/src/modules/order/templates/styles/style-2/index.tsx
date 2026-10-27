@@ -14,10 +14,12 @@ import { HttpTypes } from "@medusajs/types"
 
 interface OrderCompletedTemplateProps {
   order: HttpTypes.StoreOrder
+  returnDeadlineDays?: number
 }
 
 export default async function OrderCompletedStyle2({
   order,
+  returnDeadlineDays = 7,
 }: OrderCompletedTemplateProps) {
   const onboardingCookie = await readCookie("_medusa_onboarding")
   const t = await getTranslations("Order")
@@ -117,7 +119,7 @@ export default async function OrderCompletedStyle2({
             </div>
 
             <section className="mt-4 px-2">
-              <Help />
+              <Help returnDeadlineDays={returnDeadlineDays} />
             </section>
           </div>
         </div>

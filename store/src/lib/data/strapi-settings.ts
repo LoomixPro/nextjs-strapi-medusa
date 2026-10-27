@@ -1,5 +1,3 @@
-"use server"
-
 import { cache } from "react"
 import { cacheLife, cacheTag } from "next/cache"
 import { fetchWithRetry } from "@lib/util/fetch-retry"

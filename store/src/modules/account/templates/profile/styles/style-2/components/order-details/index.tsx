@@ -114,7 +114,7 @@ const OrderDetailsStyle2: React.FC<OrderDetailsTemplateProps> = ({
           </div>
 
           <div className="bg-muted rounded-3xl p-6 sm:p-8 border border-border">
-            <Help />
+            <Help returnDeadlineDays={returnDeadlineDays} />
           </div>
         </div>
       </div>

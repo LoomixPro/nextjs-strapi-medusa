@@ -3,7 +3,11 @@ import { useTranslations } from "next-intl"
 import React from "react"
 import { HelpCircle, MessageSquare, RotateCcw } from "lucide-react"
 
-const Help = () => {
+type HelpProps = {
+  returnDeadlineDays?: number
+}
+
+const Help = ({ returnDeadlineDays = 7 }: HelpProps) => {
   const t = useTranslations("Order")
 
   return (
@@ -49,7 +53,7 @@ const Help = () => {
               {t("returns")}
             </span>
             <span className="text-[11px] text-gray-400 dark:text-zinc-500 mt-0.5 truncate">
-              {t("exchange_returns")}
+              {t("exchange_returns", { days: returnDeadlineDays })}
             </span>
           </div>
         </LocalizedClientLink>
