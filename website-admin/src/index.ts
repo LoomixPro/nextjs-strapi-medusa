@@ -239,9 +239,14 @@ function triggerNextJsRevalidation() {
       return;
     }
 
-    const url = `${baseUrl}/api/revalidate/menu?secret=${secret}`;
+    const url = `${baseUrl}/api/revalidate/menu`;
 
-    fetch(url, { method: 'POST' })
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'x-strapi-secret': secret,
+      },
+    })
       .then(res => res.json())
       .catch(err => console.error('[STRAPI] Revalidation fetch error:', err.message));
 

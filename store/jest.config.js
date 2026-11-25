@@ -22,6 +22,7 @@ const customJestConfig = {
     "<rootDir>/.next/",
     "<rootDir>/e2e/",
   ],
+  modulePathIgnorePatterns: ["<rootDir>/.next/"],
 }
 
 module.exports = createJestConfig(customJestConfig)

@@ -384,7 +384,7 @@ export const listProductsWithSort = async ({
 
     const hasPostFilter =
       priceMin !== undefined || priceMax !== undefined || onSale === "true"
-    const searchLimit = hasPostFilter ? 100 : limit
+    const searchLimit = hasPostFilter ? 1000 : limit
     const searchOffset = hasPostFilter ? 0 : offset
 
     const response = await fetch(
@@ -422,15 +422,26 @@ export const listProductsWithSort = async ({
 
     let products: HttpTypes.StoreProduct[] = []
     if (productIds.length > 0) {
-      const { response: listResponse } = await listProducts({
-        countryCode,
-        queryParams: {
-          id: productIds,
-          limit: productIds.length,
-        },
-      })
+      const chunkSize = 100
+      const loadedProducts: HttpTypes.StoreProduct[] = []
+
+      for (let i = 0; i < productIds.length; i += chunkSize) {
+        const chunkIds = productIds.slice(i, i + chunkSize)
+        const { response: listResponse } = await listProducts({
+          countryCode,
+          queryParams: {
+            id: chunkIds,
+            limit: chunkIds.length,
+          },
+        })
+        if (listResponse.products?.length) {
+          loadedProducts.push(...listResponse.products)
+        }
+      }
+
+      const productById = new Map(loadedProducts.map((p) => [p.id, p]))
       products = productIds
-        .map((id) => listResponse.products.find((p) => p.id === id))
+        .map((id) => productById.get(id))
         .filter(Boolean) as HttpTypes.StoreProduct[]
     }
 

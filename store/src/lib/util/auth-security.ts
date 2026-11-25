@@ -73,9 +73,9 @@ const OTP_VERIFY_LIMIT: RateLimitOptions = {
 export async function getClientIp(): Promise<string> {
   const h = await headers()
   return (
+    h.get("cf-connecting-ip")?.trim() ||
+    h.get("x-real-ip")?.trim() ||
     h.get("x-forwarded-for")?.split(",")[0].trim() ||
-    h.get("x-real-ip") ||
-    h.get("cf-connecting-ip") ||
     "127.0.0.1"
   )
 }

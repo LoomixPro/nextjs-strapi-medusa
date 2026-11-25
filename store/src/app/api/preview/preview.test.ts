@@ -1,3 +1,4 @@
+import crypto from "node:crypto"
 import { GET } from "./route"
 
 // Mock next/headers
@@ -124,5 +125,51 @@ describe("GET /api/preview", () => {
       "fa-IR",
       expect.any(Object)
     )
+  })
+
+  it("allows valid short-lived HMAC signature without exposing secret in URL", async () => {
+    const ts = String(Date.now())
+    const uid = "api::homepage.homepage"
+    const documentId = "doc_1"
+    const locale = "fa-IR"
+    const status = "draft"
+    const payload = `${uid}:${documentId}:${locale}:${status}:${ts}`
+    const sig = crypto
+      .createHmac("sha256", "super_secret_preview_token")
+      .update(payload)
+      .digest("hex")
+
+    const req = {
+      nextUrl: new URL(
+        `http://localhost:8000/api/preview?uid=${uid}&documentId=${documentId}&locale=${locale}&status=${status}&ts=${ts}&sig=${sig}`
+      ),
+    } as any
+
+    try {
+      await GET(req)
+    } catch (e: any) {
+      expect(e.message).toContain("NEXT_REDIRECT")
+    }
+
+    expect(mockEnable).toHaveBeenCalled()
+  })
+
+  it("rejects expired or tampered HMAC signature with 401", async () => {
+    const expiredTs = String(Date.now() - 10 * 60 * 1000)
+    const uid = "api::homepage.homepage"
+    const payload = `${uid}:::draft:${expiredTs}`
+    const sig = crypto
+      .createHmac("sha256", "super_secret_preview_token")
+      .update(payload)
+      .digest("hex")
+
+    const req = {
+      nextUrl: new URL(
+        `http://localhost:8000/api/preview?uid=${uid}&ts=${expiredTs}&sig=${sig}`
+      ),
+    } as any
+
+    const res = await GET(req)
+    expect(res.status).toBe(401)
   })
 })

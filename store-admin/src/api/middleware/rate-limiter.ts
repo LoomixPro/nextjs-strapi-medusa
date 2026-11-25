@@ -17,41 +17,78 @@ import Redis from "ioredis"
 
 let redisClient: Redis | null = null
 let redisReady = false
+let connectPromise: Promise<Redis | null> | null = null
+let lastFailureTime = 0
+const RETRY_COOLDOWN_MS = 10_000
 
-function getRedis(): Redis | null {
-  if (redisClient) return redisReady ? redisClient : null
-
+async function getRedisAsync(): Promise<Redis | null> {
   const url = process.env.REDIS_URL
   if (!url) return null
 
-  try {
-    const client = new Redis(url, {
-      // Don't retry forever on startup — fast fallback to in-memory
-      maxRetriesPerRequest: 1,
-      enableReadyCheck: true,
-      lazyConnect: true,
-      connectTimeout: 3000,
-    })
-
-    client.on("ready", () => { redisReady = true })
-    client.on("error", (err: Error) => {
-      if (redisReady) {
-        // Log once so operators know, then silently degrade to in-memory
-        console.error("[rate-limiter] Redis error, falling back to in-memory:", err.message)
-      }
-      redisReady = false
-    })
-
-    client.connect().catch(() => {
-      // Connection failed on startup — in-memory fallback will be used
-    })
-
-    redisClient = client
-  } catch {
-    // ioredis constructor threw — in-memory fallback
+  if (redisClient && redisReady && redisClient.status === "ready") {
+    return redisClient
   }
 
-  return redisReady ? redisClient : null
+  if (!redisReady && Date.now() - lastFailureTime < RETRY_COOLDOWN_MS) {
+    return null
+  }
+
+  if (connectPromise) {
+    return connectPromise
+  }
+
+  connectPromise = (async () => {
+    try {
+      if (!redisClient || redisClient.status === "end" || redisClient.status === "close") {
+        const client = new Redis(url, {
+          maxRetriesPerRequest: 1,
+          enableReadyCheck: true,
+          lazyConnect: true,
+          connectTimeout: 3000,
+        })
+
+        client.on("ready", () => { redisReady = true })
+        client.on("error", (err: Error) => {
+          if (redisReady) {
+            console.error("[rate-limiter] Redis error, falling back to in-memory:", err.message)
+          }
+          redisReady = false
+        })
+        client.on("close", () => { redisReady = false })
+        client.on("end", () => { redisReady = false })
+
+        redisClient = client
+      }
+
+      if (redisClient.status === "wait") {
+        await redisClient.connect()
+      } else if (redisClient.status !== "ready") {
+        await new Promise<void>((resolve, reject) => {
+          const onReady = () => { cleanup(); resolve() }
+          const onError = (err: Error) => { cleanup(); reject(err) }
+          const timer = setTimeout(() => { cleanup(); resolve() }, 1500)
+          function cleanup() {
+            clearTimeout(timer)
+            redisClient?.off("ready", onReady)
+            redisClient?.off("error", onError)
+          }
+          redisClient!.once("ready", onReady)
+          redisClient!.once("error", onError)
+        })
+      }
+
+      redisReady = redisClient.status === "ready"
+      return redisReady ? redisClient : null
+    } catch {
+      redisReady = false
+      lastFailureTime = Date.now()
+      return null
+    } finally {
+      connectPromise = null
+    }
+  })()
+
+  return connectPromise
 }
 
 // ─── In-memory fallback store ─────────────────────────────────────────────────
@@ -84,8 +121,14 @@ if (!(CLEANUP_KEY in globalThis)) {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getClientIp(req: MedusaRequest): string {
+  const cfIp = req.headers["cf-connecting-ip"]
+  if (typeof cfIp === "string" && cfIp.trim()) return cfIp.trim()
+  const realIp = req.headers["x-real-ip"]
+  if (typeof realIp === "string" && realIp.trim()) return realIp.trim()
   const forwarded = req.headers["x-forwarded-for"]
-  if (typeof forwarded === "string") return forwarded.split(",")[0].trim()
+  if (typeof forwarded === "string" && forwarded.trim()) {
+    return forwarded.split(",")[0].trim()
+  }
   return (req as any).ip || "unknown"
 }
 
@@ -110,10 +153,7 @@ export interface RateLimitOptions {
 
 const REDIS_PREFIX = "medusa_rl:"
 
-async function isLockedRedis(key: string): Promise<{ locked: boolean; retryInSeconds: number }> {
-  const redis = getRedis()
-  if (!redis) return { locked: false, retryInSeconds: 0 }
-
+async function isLockedRedis(redis: Redis, key: string): Promise<{ locked: boolean; retryInSeconds: number }> {
   const lockedUntil = await redis.get(`${REDIS_PREFIX}${key}:locked_until`)
   if (!lockedUntil) return { locked: false, retryInSeconds: 0 }
 
@@ -126,12 +166,10 @@ async function isLockedRedis(key: string): Promise<{ locked: boolean; retryInSec
 }
 
 async function checkAttemptsRedis(
+  redis: Redis,
   key: string,
   options: RateLimitOptions
 ): Promise<{ blocked: boolean; retryInSeconds: number }> {
-  const redis = getRedis()
-  if (!redis) return { blocked: false, retryInSeconds: 0 }
-
   const attempts = parseInt((await redis.get(`${REDIS_PREFIX}${key}:attempts`)) ?? "0", 10)
   if (attempts >= options.maxAttempts) {
     const ttl = await redis.pttl(`${REDIS_PREFIX}${key}:attempts`)
@@ -140,10 +178,7 @@ async function checkAttemptsRedis(
   return { blocked: false, retryInSeconds: 0 }
 }
 
-async function incrementRedis(key: string, options: RateLimitOptions): Promise<void> {
-  const redis = getRedis()
-  if (!redis) return
-
+async function incrementRedis(redis: Redis, key: string, options: RateLimitOptions): Promise<void> {
   const attemptsKey = `${REDIS_PREFIX}${key}:attempts`
   const windowSecs = Math.ceil(options.windowMs / 1000)
 
@@ -222,11 +257,11 @@ export function createRateLimitMiddleware(options: RateLimitOptions) {
   return async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
     const ip = getClientIp(req)
     const key = options.keyFn ? options.keyFn(req) : `${req.path}:${ip}`
-    const useRedis = !!getRedis()
+    const redis = await getRedisAsync()
 
     // ── 1. Always check limit BEFORE allowing the request ─────────────────
-    const locked = useRedis
-      ? await isLockedRedis(key)
+    const locked = redis
+      ? await isLockedRedis(redis, key)
       : isLockedMem(key)
 
     if (locked.locked) {
@@ -237,8 +272,8 @@ export function createRateLimitMiddleware(options: RateLimitOptions) {
       })
     }
 
-    const checked = useRedis
-      ? await checkAttemptsRedis(key, options)
+    const checked = redis
+      ? await checkAttemptsRedis(redis, key, options)
       : checkAttemptsMem(key, options)
 
     if (checked.blocked) {
@@ -251,7 +286,7 @@ export function createRateLimitMiddleware(options: RateLimitOptions) {
 
     // ── 2. Increment counter at the right time ─────────────────────────────
     const increment = () =>
-      useRedis ? incrementRedis(key, options) : Promise.resolve(incrementMem(key, options))
+      redis ? incrementRedis(redis, key, options) : Promise.resolve(incrementMem(key, options))
 
     if (countOn === "always") {
       await increment()

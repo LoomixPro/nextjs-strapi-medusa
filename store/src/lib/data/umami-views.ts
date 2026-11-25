@@ -2,7 +2,10 @@ import { getUmamiServerUrl } from "@lib/util/server-urls"
 
 let cachedViews: Record<string, number> | null = null
 let cacheTime = 0
+let cachedToken: string | null = null
+let tokenCacheTime = 0
 const CACHE_TTL = 60 * 1000
+const TOKEN_TTL = 60 * 60 * 1000 // 1 hour
 
 function getUmamiCredentials() {
   const umamiUrl = getUmamiServerUrl()
@@ -20,11 +23,19 @@ function getUmamiCredentials() {
   }
 }
 
-async function getUmamiToken(credentials: {
-  umamiUrl: string
-  username: string
-  password: string
-}) {
+async function getUmamiToken(
+  credentials: {
+    umamiUrl: string
+    username: string
+    password: string
+  },
+  forceRefresh = false
+) {
+  const now = Date.now()
+  if (!forceRefresh && cachedToken && now - tokenCacheTime <= TOKEN_TTL) {
+    return cachedToken
+  }
+
   const res = await fetch(`${credentials.umamiUrl}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -40,7 +51,9 @@ async function getUmamiToken(credentials: {
   }
 
   const data = await res.json()
-  return data.token as string
+  cachedToken = data.token as string
+  tokenCacheTime = now
+  return cachedToken
 }
 
 function parseViewMap(metricsData: { x: string; y: number }[]) {
@@ -85,15 +98,25 @@ export async function getUmamiViewMap(): Promise<Record<string, number>> {
   }
 
   try {
-    const token = await getUmamiToken(credentials)
+    let token = await getUmamiToken(credentials)
     const metricsUrl = `${credentials.umamiUrl}/api/websites/${websiteId}/metrics?type=path&startAt=0&endAt=${now}`
 
-    const metricsRes = await fetch(metricsUrl, {
+    let metricsRes = await fetch(metricsUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
       cache: "no-store",
     })
+
+    if (metricsRes.status === 401) {
+      token = await getUmamiToken(credentials, true)
+      metricsRes = await fetch(metricsUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      })
+    }
 
     if (!metricsRes.ok) {
       throw new Error(`Failed to fetch metrics: ${metricsRes.statusText}`)
@@ -119,4 +142,6 @@ export async function getUmamiViewCount(handle: string): Promise<number> {
 export function resetUmamiViewsCache() {
   cachedViews = null
   cacheTime = 0
+  cachedToken = null
+  tokenCacheTime = 0
 }

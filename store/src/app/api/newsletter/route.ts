@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server"
 import { rateLimit } from "@lib/util/rate-limiter"
 
+import { getClientIp } from "@lib/util/auth-security"
+
 export async function POST(req: Request) {
   try {
-    // Extract IP address from request headers
-    const forwardedFor = req.headers.get("x-forwarded-for")
-    const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown-ip"
+    const ip = await getClientIp()
 
     const limitCheck = await rateLimit(`newsletter:${ip}`, {
       maxAttempts: 2,

@@ -58,10 +58,9 @@ export async function requestEmailLoginOtp(
       }
     )
 
-    // New user — create customer with registration token
-    await setAuthToken(regToken as string)
+    // New user — create customer with registration token (without setting auth cookie before OTP verification)
     const headers = {
-      ...(await getAuthHeaders()),
+      Authorization: `Bearer ${regToken}`,
     }
 
     const emailName =
@@ -242,10 +241,9 @@ export const authenticateWithPhone = async (phone: string) => {
       }
     )
 
-    // New user — create customer with registration token
-    await setAuthToken(regToken as string)
+    // New user — create customer with registration token (without setting auth cookie before OTP verification)
     const headers = {
-      ...(await getAuthHeaders()),
+      Authorization: `Bearer ${regToken}`,
     }
 
     const cleanPhone = phone.replace(/[^0-9+]/g, "")

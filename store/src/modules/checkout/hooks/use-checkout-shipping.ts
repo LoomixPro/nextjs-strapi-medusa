@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import { setShippingMethod } from "@lib/data/cart"
@@ -52,12 +52,15 @@ export function useCheckoutShipping(
   const router = useRouter()
   const pathname = usePathname()
 
-  const shippingMethods = availableShippingMethods || []
+  const shippingMethods = useMemo(
+    () => availableShippingMethods || [],
+    [availableShippingMethods]
+  )
 
   useEffect(() => {
     setIsLoadingPrices(true)
 
-    if (shippingMethods?.length) {
+    if (shippingMethods.length) {
       const promises = shippingMethods
         .filter((sm) => sm.price_type === "calculated")
         .map((sm) => calculatePriceForShippingOption(sm.id, cart.id))
@@ -83,7 +86,7 @@ export function useCheckoutShipping(
     } else {
       setIsLoadingPrices(false)
     }
-  }, [availableShippingMethods, cart.id])
+  }, [shippingMethods, cart.id])
 
   const handleSetShippingMethod = async (id: string) => {
     setError(null)

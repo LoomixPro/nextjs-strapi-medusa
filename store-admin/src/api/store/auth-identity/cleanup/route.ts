@@ -32,11 +32,20 @@ export const POST = async (
     const { entity_id } = (req.body as { entity_id?: string }) || {}
 
     try {
-        // Decode the JWT to get the auth identity ID
-        const secret = process.env.JWT_SECRET || "supersecret"
-        const payload = jwt.verify(token, secret) as any
-        
-        logger.info(`[auth-cleanup] JWT Payload: ${JSON.stringify(payload)}`)
+        // Decode and verify the JWT using the configured secret (no weak fallback in production)
+        const isProd = process.env.NODE_ENV === "production"
+        const secret = process.env.JWT_SECRET || (!isProd ? "supersecret" : "")
+        if (!secret) {
+            logger.error("[auth-cleanup] JWT_SECRET is not configured")
+            return res.status(500).json({ error: "Server configuration error" })
+        }
+
+        let payload: any
+        try {
+            payload = jwt.verify(token, secret) as any
+        } catch {
+            return res.status(401).json({ error: "Invalid or expired token" })
+        }
 
         // The auth identity ID is stored as actor_id or auth_identity_id in the JWT
         const authIdentityId = payload?.actor_id || payload?.auth_identity_id
@@ -47,9 +56,23 @@ export const POST = async (
             const identities = await authModuleService.listAuthIdentities({ id: [authIdentityId] })
             identity = identities[0]
         } else if (entity_id) {
-            // Fallback: look up by entity_id (email or phone) if provided in the body
-            const identities = await authModuleService.listAuthIdentities({})
-            identity = identities.find((i: any) => i.provider_identities?.some((p: any) => p.entity_id === entity_id))
+            // Only allow entity_id lookup if it matches a verified claim on the JWT
+            const tokenEntity =
+                payload?.user_metadata?.email ||
+                payload?.email ||
+                payload?.phone
+            if (!tokenEntity || String(tokenEntity).toLowerCase() !== String(entity_id).toLowerCase()) {
+                return res.status(403).json({ error: "Token does not match requested identity" })
+            }
+            const providers = await authModuleService.listProviderIdentities({
+                entity_id,
+            })
+            const matchedProvider = providers[0]
+            if (matchedProvider?.auth_identity_id) {
+                identity = await authModuleService
+                    .retrieveAuthIdentity(matchedProvider.auth_identity_id)
+                    .catch(() => null)
+            }
         }
 
         if (!identity) {

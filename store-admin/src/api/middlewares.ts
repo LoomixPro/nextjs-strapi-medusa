@@ -319,11 +319,14 @@ export default defineMiddlewares({
                 const categoryPath = `/${DEFAULT_COUNTRY_CODE}/categories/${category.handle}`
                 logger.info(`[Middleware] Revalidating path: ${categoryPath}`)
 
-                const revalidateUrl = `${STOREFRONT_URL}/api/revalidate?secret=${REVALIDATE_SECRET}`
+                const revalidateUrl = `${STOREFRONT_URL}/api/revalidate`
                 const response = await fetch(revalidateUrl, {
                   method: "POST",
                   body: JSON.stringify({ paths: [categoryPath] }),
-                  headers: { "Content-Type": "application/json" }
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-strapi-secret": REVALIDATE_SECRET,
+                  }
                 })
 
                 if (!response.ok) {
@@ -423,11 +426,14 @@ export default defineMiddlewares({
                 const categoryPath = `/${DEFAULT_COUNTRY_CODE}/categories/${category.handle}`
                 logger.info(`[Middleware] Revalidating path: ${categoryPath}`)
 
-                const revalidateUrl = `${STOREFRONT_URL}/api/revalidate?secret=${REVALIDATE_SECRET}`
+                const revalidateUrl = `${STOREFRONT_URL}/api/revalidate`
                 const response = await fetch(revalidateUrl, {
                   method: "POST",
                   body: JSON.stringify({ paths: [categoryPath] }),
-                  headers: { "Content-Type": "application/json" }
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-strapi-secret": REVALIDATE_SECRET,
+                  }
                 })
 
                 if (!response.ok) {

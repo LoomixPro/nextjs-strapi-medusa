@@ -398,7 +398,7 @@ services:
       - app_network
 
   caddy:
-    image: caddy:latest
+    image: caddy:2-alpine
     container_name: caddy
     restart: unless-stopped
     env_file:
@@ -454,7 +454,7 @@ services:
   # Management & Container Dashboard (Portainer)
   # ==========================================
   portainer:
-    image: portainer/portainer-ce:latest
+    image: portainer/portainer-ce:lts
     container_name: portainer
     restart: unless-stopped
     security_opt:

@@ -14,17 +14,46 @@ import { cookies, draftMode } from "next/headers"
 import { redirect } from "next/navigation"
 import { NextRequest } from "next/server"
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl
+function safeEqualHex(actualHex: string, expectedHex: string): boolean {
+  const actual = new Uint8Array(Buffer.from(actualHex, "utf8"))
+  const expected = new Uint8Array(Buffer.from(expectedHex, "utf8"))
+  if (actual.length !== expected.length) {
+    return false
+  }
+  return crypto.timingSafeEqual(actual, expected)
+}
 
-  // 1. Validate the secret token sent by Strapi using REVALIDATE_SECRET
+function isValidPreviewAuth(
+  searchParams: URLSearchParams,
+  expectedSecret: string
+): boolean {
+  const sig = searchParams.get("sig")
+  const ts = searchParams.get("ts")
+
+  if (sig && ts) {
+    const timestamp = Number(ts)
+    const maxAgeMs = 5 * 60 * 1000 // 5 minutes
+    if (
+      !Number.isFinite(timestamp) ||
+      Math.abs(Date.now() - timestamp) > maxAgeMs
+    ) {
+      return false
+    }
+    const uid = searchParams.get("uid") || ""
+    const documentId = searchParams.get("documentId") || ""
+    const locale = searchParams.get("locale") || ""
+    const status = searchParams.get("status") ?? "draft"
+    const payload = `${uid}:${documentId}:${locale}:${status}:${ts}`
+    const expectedSig = crypto
+      .createHmac("sha256", expectedSecret)
+      .update(payload)
+      .digest("hex")
+    return safeEqualHex(sig, expectedSig)
+  }
+
   const secret = searchParams.get("secret")
-  const expectedSecret = process.env.REVALIDATE_SECRET
-
-  if (!secret || !expectedSecret) {
-    return new Response(JSON.stringify({ message: "Invalid preview secret" }), {
-      status: 401,
-    })
+  if (!secret) {
+    return false
   }
 
   const actual = new Uint8Array(
@@ -33,7 +62,16 @@ export async function GET(request: NextRequest) {
   const expected = new Uint8Array(
     crypto.createHash("sha256").update(expectedSecret).digest()
   )
-  if (!crypto.timingSafeEqual(actual, expected)) {
+  return crypto.timingSafeEqual(actual, expected)
+}
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl
+
+  // 1. Validate short-lived HMAC signature (preferred) or secret token using REVALIDATE_SECRET
+  const expectedSecret = process.env.REVALIDATE_SECRET
+
+  if (!expectedSecret || !isValidPreviewAuth(searchParams, expectedSecret)) {
     return new Response(JSON.stringify({ message: "Invalid preview secret" }), {
       status: 401,
     })

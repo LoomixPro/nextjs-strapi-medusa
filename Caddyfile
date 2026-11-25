@@ -62,6 +62,7 @@ store.local {
 		Content-Security-Policy "frame-ancestors 'self' https://admin.local http://localhost:1337 http://127.0.0.1:1337"
 	}
 	reverse_proxy storefront:8000 {
+		header_up X-Real-IP {remote_host}
 		lb_try_duration 15s
 		lb_try_interval 250ms
 	}
@@ -74,7 +75,9 @@ api.local {
 		reverse_proxy minio:9000
 	}
 	handle {
-		reverse_proxy medusa:9000
+		reverse_proxy medusa:9000 {
+			header_up X-Real-IP {remote_host}
+		}
 	}
 }
 
@@ -151,6 +154,7 @@ search.local {
 	}
 
 	reverse_proxy storefront:8000 {
+		header_up X-Real-IP {remote_host}
 		lb_try_duration 15s
 		lb_try_interval 250ms
 	}
@@ -169,7 +173,9 @@ api.{$DOMAIN} {
 		reverse_proxy minio:9000
 	}
 	handle {
-		reverse_proxy medusa:9000
+		reverse_proxy medusa:9000 {
+			header_up X-Real-IP {remote_host}
+		}
 	}
 }
 

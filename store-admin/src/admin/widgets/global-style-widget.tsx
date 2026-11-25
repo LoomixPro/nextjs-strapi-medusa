@@ -314,6 +314,8 @@ function processAdminDom() {
         tag === "STYLE" ||
         tag === "TEXTAREA" ||
         tag === "INPUT" ||
+        tag === "CODE" ||
+        tag === "PRE" ||
         parent.isContentEditable
       ) {
         return NodeFilter.FILTER_REJECT

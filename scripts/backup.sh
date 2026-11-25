@@ -75,17 +75,20 @@ if [ "$INCLUDE_MEDIA" = true ]; then
     TIMESTAMP="$(date +'%Y%m%d_%H%M%S')"
     MEDIA_ARCHIVE="${MEDIA_DIR}/media_${TIMESTAMP}.tar.gz"
     
-    docker run --rm \
+    if docker run --rm \
         -v minio_data:/data/minio:ro \
         -v strapi_uploads:/data/strapi:ro \
         -v medusa_uploads:/data/medusa:ro \
         -v "${MEDIA_DIR}":/backup \
         alpine:latest \
-        sh -c "tar -czf /backup/media_${TIMESTAMP}.tar.gz -C /data . 2>/dev/null || true"
-        
-    if [ -f "${MEDIA_ARCHIVE}" ]; then
-        MEDIA_SIZE=$(du -h "${MEDIA_ARCHIVE}" | cut -f1)
-        success "Media archive created: media_${TIMESTAMP}.tar.gz (${MEDIA_SIZE})"
+        sh -c "tar -czf /backup/media_${TIMESTAMP}.tar.gz -C /data ."; then
+        if [ -f "${MEDIA_ARCHIVE}" ]; then
+            MEDIA_SIZE=$(du -h "${MEDIA_ARCHIVE}" | cut -f1)
+            success "Media archive created: media_${TIMESTAMP}.tar.gz (${MEDIA_SIZE})"
+        fi
+    else
+        error "Media archive creation failed."
+        exit 1
     fi
 fi
 

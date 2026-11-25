@@ -442,10 +442,10 @@ export default {
       }
 
       if (
+        !/^[a-zA-Z0-9_/-]+$/.test(componentPath) ||
+        !/^[a-zA-Z0-9_-]+$/.test(styleName) ||
         componentPath.includes("..") ||
-        styleName.includes("..") ||
-        componentPath.includes("\\") ||
-        styleName.includes("\\")
+        styleName.includes("..")
       ) {
         return ctx.badRequest("Invalid component or style parameter.")
       }
@@ -467,18 +467,26 @@ export default {
         )
         if (fs.existsSync(fallback)) localRegistryModules = fallback
       }
-      const localStyleDir = path.join(
-        localRegistryModules,
+      const normalizedRegistryBase = path.resolve(localRegistryModules)
+      const localStyleDir = path.resolve(
+        normalizedRegistryBase,
         componentPath,
         "styles",
         styleName
       )
 
+      if (!localStyleDir.startsWith(normalizedRegistryBase + path.sep)) {
+        return ctx.badRequest("Invalid component or style path.")
+      }
+
       if (fs.existsSync(localStyleDir)) {
         const files = fs.readdirSync(localStyleDir)
         const imgFile = files.find((f) => /\.(png|jpe?g|webp|gif|svg)$/i.test(f))
         if (imgFile) {
-          const imgPath = path.join(localStyleDir, imgFile)
+          const imgPath = path.resolve(localStyleDir, imgFile)
+          if (!imgPath.startsWith(localStyleDir + path.sep)) {
+            return ctx.badRequest("Invalid preview file path.")
+          }
           const ext = path.extname(imgFile).toLowerCase().slice(1)
           const mimeTypes: Record<string, string> = {
             png: "image/png",
@@ -494,15 +502,24 @@ export default {
         }
       }
 
-      // 2. Redirect to raw GitHub preview URL
-      const registryUrl = (
-        process.env.REGISTRY_URL ||
+      // 2. Redirect to validated raw GitHub preview URL (prevent open redirects)
+      const defaultRegistryUrl =
         "https://raw.githubusercontent.com/Loomix-pro/Loomix-registry/main/src/modules"
-      )
+      const rawRegistryUrl = (process.env.REGISTRY_URL || defaultRegistryUrl)
         .trim()
         .replace(/\/$/, "")
 
-      const targetUrl = `${registryUrl}/${componentPath}/styles/${styleName}/preview.webp`
+      let parsedRegistry: URL
+      try {
+        parsedRegistry = new URL(rawRegistryUrl)
+        if (parsedRegistry.protocol !== "https:") {
+          parsedRegistry = new URL(defaultRegistryUrl)
+        }
+      } catch {
+        parsedRegistry = new URL(defaultRegistryUrl)
+      }
+
+      const targetUrl = `${parsedRegistry.href}/${componentPath}/styles/${styleName}/preview.webp`
       return ctx.redirect(targetUrl)
     } catch (err: any) {
       console.error("[Strapi Style Preview Exception]:", err)

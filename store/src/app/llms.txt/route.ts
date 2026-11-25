@@ -6,6 +6,10 @@ import { listCollections } from "@lib/data/collections"
 export async function GET() {
   const rawBaseUrl = getBaseURL()
   const baseUrl = rawBaseUrl.replace(/\/+$/, "")
+  const defaultRegion = (
+    process.env.NEXT_PUBLIC_DEFAULT_REGION || "us"
+  ).toLowerCase()
+  const regionBaseUrl = `${baseUrl}/${defaultRegion}`
 
   let siteName = "Online Store"
   let siteDescription =
@@ -41,13 +45,13 @@ export async function GET() {
     `# ${siteName}`,
     `> ${siteDescription}`,
     `## Main Navigation`,
-    `- [Home](${baseUrl}): Featured highlights, newest arrivals, and promotions.`,
-    `- [Store Catalog](${baseUrl}/store): Browse all available products with filters and search.`,
-    `- [Cart](${baseUrl}/cart): Shopping bag and checkout.`,
-    `- [Customer Account](${baseUrl}/account): Customer profile, order history, and addresses.`,
-    `- [About Us](${baseUrl}/about): Learn more about our store and brand.`,
-    `- [Contact Support](${baseUrl}/contact): Contact details, support hours, and inquiry form.`,
-    `- [FAQ](${baseUrl}/faq): Frequently asked questions and help guide.`,
+    `- [Home](${regionBaseUrl}): Featured highlights, newest arrivals, and promotions.`,
+    `- [Store Catalog](${regionBaseUrl}/store): Browse all available products with filters and search.`,
+    `- [Cart](${regionBaseUrl}/cart): Shopping bag and checkout.`,
+    `- [Customer Account](${regionBaseUrl}/account): Customer profile, order history, and addresses.`,
+    `- [About Us](${regionBaseUrl}/about): Learn more about our store and brand.`,
+    `- [Contact Support](${regionBaseUrl}/contact): Contact details, support hours, and inquiry form.`,
+    `- [FAQ](${regionBaseUrl}/faq): Frequently asked questions and help guide.`,
   ]
 
   // Add Dynamic Categories if configured in Medusa
@@ -56,7 +60,7 @@ export async function GET() {
       .filter((c) => Boolean(c.handle && c.name))
       .map(
         (c) =>
-          `- [${c.name}](${baseUrl}/categories/${c.handle}): ${c.description || `Browse ${c.name}`}`
+          `- [${c.name}](${regionBaseUrl}/categories/${c.handle}): ${c.description || `Browse ${c.name}`}`
       )
 
     if (categoryLinks.length > 0) {
@@ -68,7 +72,7 @@ export async function GET() {
   if (collections && collections.length > 0) {
     const collectionLinks = collections
       .filter((c) => Boolean(c.handle && c.title))
-      .map((c) => `- [${c.title}](${baseUrl}/collections/${c.handle})`)
+      .map((c) => `- [${c.title}](${regionBaseUrl}/collections/${c.handle})`)
 
     if (collectionLinks.length > 0) {
       sections.push(`## Featured Collections\n\n${collectionLinks.join("\n")}`)
@@ -78,9 +82,9 @@ export async function GET() {
   // Store policies and trust pages
   sections.push(
     `## Policies & Customer Care\n\n` +
-      `- [Privacy Policy](${baseUrl}/privacy): Privacy policy and data handling information.\n` +
-      `- [Terms of Service](${baseUrl}/terms): Terms, conditions, and store guidelines.\n` +
-      `- [Returns Policy](${baseUrl}/returns): Return conditions, warranty, and refund instructions.`
+      `- [Privacy Policy](${regionBaseUrl}/privacy): Privacy policy and data handling information.\n` +
+      `- [Terms of Service](${regionBaseUrl}/terms): Terms, conditions, and store guidelines.\n` +
+      `- [Returns Policy](${regionBaseUrl}/returns): Return conditions, warranty, and refund instructions.`
   )
 
   // Technology Stack

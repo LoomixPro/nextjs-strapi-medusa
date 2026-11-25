@@ -54,6 +54,7 @@ export default class MeilisearchModuleService {
                     "variants.inventory_quantity",
                     "color_facets",
                     "prices_by_currency",
+                    "on_sale",
                 ],
                 sortableAttributes: [
                     "created_at",

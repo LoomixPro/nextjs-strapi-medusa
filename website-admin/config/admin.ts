@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 export default ({ env }) => ({
   auth: {
     secret: env('ADMIN_JWT_SECRET'),
@@ -31,11 +33,24 @@ export default ({ env }) => ({
       // Single handler function receives uid + context — route based on uid
       handler: async (uid, { documentId, locale, status }) => {
         const clientUrl = env('NEXT_PUBLIC_BASE_URL', 'http://localhost:8000');
-        const secret = env('REVALIDATE_SECRET');
+        const secret = env('REVALIDATE_SECRET', '');
+        const ts = String(Date.now());
+        const payload = `${uid || ''}:${documentId || ''}:${locale || ''}:${status || 'draft'}:${ts}`;
+        const sig = secret
+          ? crypto.createHmac('sha256', secret).update(payload).digest('hex')
+          : '';
 
-        // Build the Next.js /api/preview URL with all required params
-        // Next.js will validate the secret, enable Draft Mode, then redirect
-        return `${clientUrl}/api/preview?secret=${secret}&uid=${uid}&documentId=${documentId}&locale=${locale}&status=${status}`;
+        const params = new URLSearchParams({
+          uid: uid || '',
+          documentId: documentId || '',
+          locale: locale || '',
+          status: status || 'draft',
+          ts,
+          sig,
+        });
+
+        // Build the Next.js /api/preview URL with a short-lived HMAC signature (avoids leaking REVALIDATE_SECRET in URLs/logs)
+        return `${clientUrl}/api/preview?${params.toString()}`;
       },
     },
   },

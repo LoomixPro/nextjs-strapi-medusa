@@ -1,4 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ -f .env ]; then
+  set -a
+  . ./.env
+  set +a
+fi
+
 echo "======================================================="
 echo "   Next.js + Medusa + Strapi Installation Script"
 echo "======================================================="
@@ -6,10 +14,28 @@ echo ""
 echo "Starting Docker containers..."
 docker compose up -d --build
 
-echo ""
-echo "Waiting for services to initialize (this may take a few minutes)..."
-# Wait for 30 seconds for databases and services to boot
-sleep 30
+wait_for_service() {
+  local container="$1"
+  local timeout="${2:-120}"
+  local elapsed=0
+  echo "Waiting for ${container} to become healthy..."
+  while [ "$elapsed" -lt "$timeout" ]; do
+    local status
+    status=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$container" 2>/dev/null || echo "starting")
+    if [ "$status" = "healthy" ] || [ "$status" = "running" ]; then
+      echo "✔ ${container} is ready ($status)"
+      return 0
+    fi
+    sleep 3
+    elapsed=$((elapsed + 3))
+  done
+  echo "✖ Timed out waiting for ${container}"
+  return 1
+}
+
+wait_for_service postgres 90
+wait_for_service medusa 150
+wait_for_service strapi 150
 
 echo ""
 echo "Populating sample data in Medusa and Strapi..."
@@ -17,7 +43,11 @@ echo "1. Setting up Medusa store defaults (Regions, Shipping, Currencies)..."
 docker exec medusa npm run seed
 
 echo "2. Creating Super Admin User in Medusa..."
-docker exec medusa npx medusa user -e ${MEDUSA_ADMIN_EMAIL:-admin@example.com} -p ${MEDUSA_ADMIN_PASSWORD:-password123}
+if [ -n "${MEDUSA_ADMIN_EMAIL:-}" ] && [ -n "${MEDUSA_ADMIN_PASSWORD:-}" ]; then
+  docker exec medusa npx medusa user -e "${MEDUSA_ADMIN_EMAIL}" -p "${MEDUSA_ADMIN_PASSWORD}" || true
+else
+  echo "⚠ Skipping Medusa admin creation: MEDUSA_ADMIN_EMAIL / MEDUSA_ADMIN_PASSWORD not set in .env"
+fi
 
 echo "3. Creating 30 Sample Products, Categories, Collections & Tags in Medusa..."
 docker cp store-admin/src/scripts medusa:/app/store-admin/src/ 2>/dev/null || true

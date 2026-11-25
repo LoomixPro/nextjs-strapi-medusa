@@ -102,8 +102,12 @@ export const syncProductsWorkflow = createWorkflow(
 
                         // Find price matching default store currency, fallback to first price
                         const targetPrice = prices.find(
+                            (p: any) => p.currency_code?.toLowerCase() === defaultCurrency && !p.price_list_id
+                        ) || prices.find(
                             (p: any) => p.currency_code?.toLowerCase() === defaultCurrency
                         ) || prices[0]
+
+                        const hasSalePrice = prices.some((p: any) => Boolean(p.price_list_id))
 
                         // Build structured map of prices by currency
                         const pricesByCurrency: Record<string, { amount: number; currency_code: string }> = {}
@@ -138,13 +142,14 @@ export const syncProductsWorkflow = createWorkflow(
                             inventory_quantity: synthesizedQuantity,
                             calculated_price: targetPrice ? {
                                 calculated_amount: targetPrice.amount,
-                                original_amount: targetPrice.amount, // Assuming no discounts for now
+                                original_amount: targetPrice.amount,
                                 currency_code: targetPrice.currency_code?.toLowerCase(),
                                 calculated_price: {
-                                    price_list_type: "default"
+                                    price_list_type: hasSalePrice ? "sale" : "default"
                                 }
                             } : null,
                             prices_by_currency: pricesByCurrency,
+                            on_sale: hasSalePrice,
                         }
                     })
 
@@ -181,11 +186,14 @@ export const syncProductsWorkflow = createWorkflow(
                         }
                     }
 
+                    const productOnSale = (mappedVariants || []).some((v: any) => Boolean(v.on_sale))
+
                     publishedProducts.push({
                         ...rest,
                         options: mappedOptions,
                         variants: mappedVariants,
                         prices_by_currency: productPricesByCurrency,
+                        on_sale: productOnSale,
                         color_facets: uniqueColorFacets.length > 0 ? uniqueColorFacets : undefined
                     } as unknown as SyncProductsStepInput["products"][0])
                 } else {

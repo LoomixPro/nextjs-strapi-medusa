@@ -3,11 +3,12 @@ import { connection } from "next/server"
 import { getUmamiViewCount, getUmamiViewMap } from "@lib/data/umami-views"
 import { rateLimit } from "@lib/util/rate-limiter"
 
+import { getClientIp } from "@lib/util/auth-security"
+
 export async function GET(request: Request) {
   await connection()
 
-  const forwardedFor = request.headers.get("x-forwarded-for")
-  const ip = forwardedFor ? forwardedFor.split(",")[0].trim() : "unknown-ip"
+  const ip = await getClientIp()
 
   const limitCheck = await rateLimit(`views:${ip}`, {
     maxAttempts: 30,

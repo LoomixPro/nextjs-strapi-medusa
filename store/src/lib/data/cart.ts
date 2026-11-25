@@ -401,7 +401,9 @@ export async function placeOrder(cartId?: string) {
 
   if (cartRes?.type === "order") {
     const countryCode =
-      cartRes.order.shipping_address?.country_code?.toLowerCase()
+      cartRes.order.shipping_address?.country_code?.toLowerCase() ||
+      process.env.NEXT_PUBLIC_DEFAULT_REGION?.toLowerCase() ||
+      "us"
 
     const orderCacheTag = await getCacheTag("orders")
     revalidateTag(orderCacheTag, "max")

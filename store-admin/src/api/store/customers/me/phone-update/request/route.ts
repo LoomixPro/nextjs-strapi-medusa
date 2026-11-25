@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto"
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError, Modules } from "@medusajs/framework/utils"
 
@@ -47,8 +48,8 @@ export const POST = async (
         })
     }
 
-    // 3. Generate 6-digit OTP code
-    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    // 3. Generate cryptographically secure 6-digit OTP code
+    const code = randomInt(100000, 1000000).toString()
 
     // 4. Save to cache with 2 minutes (120s) TTL
     const cacheService = req.scope.resolve(Modules.CACHE)

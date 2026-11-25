@@ -32,8 +32,12 @@ export async function GET(request: NextRequest) {
     request.nextUrl.searchParams.get("secret")
 
   if (
-    !isDev &&
-    (!internalSecret || !safeCompareSecret(providedSecret, internalSecret))
+    (!isDev &&
+      (!internalSecret ||
+        !safeCompareSecret(providedSecret, internalSecret))) ||
+    (isDev &&
+      internalSecret &&
+      !safeCompareSecret(providedSecret, internalSecret))
   ) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   }

@@ -43,15 +43,12 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const handleSetShippingMethod = async (id: string) => {
     setError(null)
-    let currentId: string | null = null
-    setShippingMethodId((prev) => {
-      currentId = prev
-      return id
-    })
+    const previousId = shippingMethodId
+    setShippingMethodId(id)
 
     await setShippingMethod({ cartId: cart.id, shippingMethodId: id }).catch(
       (err) => {
-        setShippingMethodId(currentId)
+        setShippingMethodId(previousId)
         setError(err.message)
       }
     )
@@ -59,7 +56,7 @@ const Shipping: React.FC<ShippingProps> = ({
 
   useEffect(() => {
     setError(null)
-  }, [isOpen])
+  }, [isOpen, setError])
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

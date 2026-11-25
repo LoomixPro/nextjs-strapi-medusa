@@ -18,6 +18,7 @@ ENV NODE_ENV=${NODE_ENV}
 
 WORKDIR /opt/
 COPY package.json package-lock.json ./
+COPY patches ./patches
 RUN npm config set registry "$NPM_REGISTRY" \
  && npm install -g node-gyp \
  && npm config set fetch-retry-maxtimeout 600000 -g \
